@@ -4,9 +4,9 @@
 #include <fstream>
 #include <sstream>
 #include <math.h>
-#include "opencv.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/gpu/gpu.hpp"
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #define PI 3.14159265
 #define ELBOW_OFFSET_Y 15.00
@@ -17,36 +17,39 @@
 float** transformationMatrix(float** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta){
 	// perform transformation matrix stuff here
 	// theta is the only one changing. which is why a, alpha, and distance is of type const.
+
+
+
 	return matrix;
 }
 
-float** translationMatrix(float** matrix){
-	return matrix;
-}
+void setupRobotCamera(){
+	cv::VideoCapture *camera = new cv::VideoCapture();
+	camera->open(0);
 
-void setupCamera(){
-	cv::VideoCapture cap(0); // open the video camera no. 0
-	if (!cap.isOpened())  // if not success, exit program
+	if (!camera->isOpened())
 	{
-		std::cout << "Cannot open the video cam" << std::endl;
+		std::cout << "No Camera" << std::endl;
 	}
-	double dWidth = cap.get(CV_CAP_PROP_FRAME_WIDTH); //get the width of frames of the video
-	double dHeight = cap.get(CV_CAP_PROP_FRAME_HEIGHT); //get the height of frames of the video
-	std::cout << "Frame size : " << dWidth << " x " << dHeight << std::endl;
-	cv::namedWindow("OpenCVWindow", CV_WINDOW_AUTOSIZE); //create a window called "MyVideo"
-	while (1)
+
+	cv::Mat image, grayImage, blur, canny;
+	cv::namedWindow("CameraCapture");
+
+	while (true)
 	{
-		cv::Mat frame;
-		bool bSuccess = cap.read(frame); // read a new frame from video
-		if (!bSuccess) //if not success, break loop
+		*camera >> image;
+		imshow("Streaming", image);
+
+		// perform canny edge detection algorithm
+		cv::cvtColor(image, grayImage, CV_GRAY2RGB);
+		cv::GaussianBlur(image, blur, cv::Size(7, 7), 1.5, 1.5);
+		cv::Canny(blur, canny, 0, 30, 3);
+
+		// show canny window called robovision
+		imshow("RoboVision", canny);
+
+		if (cv::waitKey(30) >= 0)
 		{
-			std::cout << "Cannot read a frame from video stream" << std::endl;
-			break;
-		}
-		cv::imshow("OpenCVFrame", frame); //show the frame in "MyVideo" window
-		if (cv::waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
-		{
-			std::cout << "esc key is pressed by user" << std::endl;
 			break;
 		}
 	}
@@ -90,7 +93,7 @@ int main(){
 
 	// RShoulderPitch
 	fs >> theta;
-	matrix_one = transformationMatrix(matrix_one, rows, columns, 0, -(PI/2.0), 0, theta);
+	matrix_one = transformationMatrix(matrix_one, rows, columns, 0, -(PI / 2.0), 0, theta);
 
 	// RShoulderRoll
 	fs >> theta;
@@ -108,16 +111,12 @@ int main(){
 	std::cout << "Finished processing file." << std::endl;
 	fs.close();
 
-	// create translation matrices
-	matrix_one = translationMatrix(matrix_one);
-	matrix_two = translationMatrix(matrix_two);
-	matrix_three = translationMatrix(matrix_three);
-	matrix_four = translationMatrix(matrix_four);
-
 	// mulitple matrices together for matrix
 	//base_to_start = matrix_one*matrix_two*matrix_three*matrix_four;
 
 	// setup camera / do this async??
-	//setupCamera();
+	//setupRobotCamera();
 
+	// program exit
+	return 0;
 }

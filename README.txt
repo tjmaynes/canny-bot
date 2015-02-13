@@ -5,7 +5,8 @@ http://stackoverflow.com/a/14945782
 
 # Refrences:
 * http://docs.opencv.org/doc/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html
-* http://www.fanjita.org/serendipity/archives/57-Capturing-webcam-video-with-OpenCV-on-Raspberry-Pi-Arch-Linux.html 
+* http://www.fanjita.org/serendipity/archives/57-Capturing-webcam-video-with-OpenCV-on-Raspberry-Pi-Arch-Linux.html
+* http://stackoverflow.com/questions/11987483/opencvs-canny-edge-detection-in-c
 
 ## Setting up OpenCV v2.4.10 in Visual Studio
 ### Installation
