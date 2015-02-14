@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <math.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -14,108 +13,212 @@
 #define SHOULDER_OFFSET_Y 98.00
 #define SHOULDER_OFFSET_Z 100.00
 
-float** transformationMatrix(float** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta){
+// function headers
+static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
+float** transformationMatrix(float** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta);
+float** multiplyMatrices(float** RShoulderPitch, float** RShoulderRoll, float** RElbowYaw, float** RElbowRoll);
+std::string roboShapeVision();
+
+int rows = 4;
+int columns = 4;
+
+static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0){
+	double dx1 = pt1.x - pt0.x;
+	double dy1 = pt1.y - pt0.y;
+	double dx2 = pt2.x - pt0.x;
+	double dy2 = pt2.y - pt0.y;
+	return (dx1*dx2 + dy1*dy2) / sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
+}
+
+float** transformationMatrix(float** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta) {
 	// perform transformation matrix stuff here
 	// theta is the only one changing. which is why a, alpha, and distance is of type const.
 
-
-
-	return matrix;
-}
-
-void setupRobotCamera(){
-	cv::VideoCapture *camera = new cv::VideoCapture();
-	camera->open(0);
-
-	if (!camera->isOpened())
-	{
-		std::cout << "No Camera" << std::endl;
+	float ** temp = new float*[columns];
+	for (int i = 0; i < rows; i++){
+		temp[i] = new float[rows];
 	}
 
-	cv::Mat image, grayImage, blur, canny;
-	cv::namedWindow("CameraCapture");
 
-	while (true)
-	{
-		*camera >> image;
-		imshow("Streaming", image);
+
+	return temp;
+}
+
+float** multiplyMatrices(float** RShoulderPitch, float** RShoulderRoll, float** RElbowYaw, float** RElbowRoll) {
+	float ** temp = new float*[columns];
+	for (int i = 0; i < rows; i++){
+		temp[i] = new float[rows];
+	}
+
+	return temp;
+}
+/*
+std::string roboShapeVision() {
+	std::cout << "Setting up NAO Robot camera!\n" << std::endl;
+	std::string shape = "";
+
+	cv::VideoCapture camera;
+	int camOpen = camera.open(CV_CAP_ANY);
+
+	if (!camera.isOpened()) {
+		std::cout << "No Camera" << std::endl;
+	}
+	cv::namedWindow("CameraCapture", CV_WINDOW_AUTOSIZE);
+
+	std::vector<std::vector<cv::Point>> contours;
+	std::vector<cv::Point> approx;
+	cv::Mat image, grayImage, blur, canny;
+
+	cv::waitKey(3000);
+	while (true) {
+		camera >> image;
+		cv::imshow("Streaming", image);
+
+		//cv::imshow("Streaming", image);
 
 		// perform canny edge detection algorithm
-		cv::cvtColor(image, grayImage, CV_GRAY2RGB);
+		if (image.empty())
+			break;
+		else if (image.channels() > 1)
+			cv::cvtColor(image, grayImage, CV_GRAY2RGB);
+		else
+			grayImage = image;
 		cv::GaussianBlur(image, blur, cv::Size(7, 7), 1.5, 1.5);
 		cv::Canny(blur, canny, 0, 30, 3);
 
 		// show canny window called robovision
-		imshow("RoboVision", canny);
+		cv::imshow("RoboVision", canny);
 
-		if (cv::waitKey(30) >= 0)
+
+		// break out of contour drawing
+		// Find contours
+		cv::findContours(canny.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+		for (int i = 0; i < contours.size(); i++)
 		{
+			// Approximate contour with accuracy proportional
+			// to the contour perimeter
+			cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
+
+			// Skip small or non-convex objects
+			if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
+				continue;
+
+			if (approx.size() == 3)
+			{
+				shape = "Triangle"; // Triangles
+				break;
+			}
+			else if (approx.size() >= 4 && approx.size() <= 6)
+			{
+				// Number of vertices of polygonal curve
+				int vtc = approx.size();
+
+				// Get the cosines of all corners
+				std::vector<double> cos;
+				for (int j = 2; j < vtc + 1; j++)
+					cos.push_back(angle(approx[j%vtc], approx[j - 2], approx[j - 1]));
+
+				// Sort ascending the cosine values
+				std::sort(cos.begin(), cos.end());
+
+				// Get the lowest and the highest cosine
+				double mincos = cos.front();
+				double maxcos = cos.back();
+
+				// Use the degrees obtained above and the number of vertices
+				// to determine the shape of the contour
+				if (vtc == 4){
+					shape = "Rectangle";
+					break;
+				}
+				else if (vtc == 5){
+					shape = "Pentagon";
+					break;
+				}
+				else if (vtc == 6){
+					shape = "Hexagon";
+					break;
+				}
+			}
+			else
+			{
+				// Detect and label circles
+				double area = cv::contourArea(contours[i]);
+				cv::Rect r = cv::boundingRect(contours[i]);
+				int radius = r.width / 2;
+
+				if (std::abs(1 - ((double)r.width / r.height)) <= 0.2 &&
+					std::abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2){
+					shape = "Circle";
+					break;
+				}
+			}
+		}
+		if (cv::waitKey(30) >= 0) {
 			break;
 		}
 	}
+	return shape;
 }
+*/
+int main() {
+	std::cout << "Welcome to the CannyBot program!" << std::endl;
+	std::string shape = "";
 
-int main(){
-	int rows = 4;
-	int columns = 4;
+	// return string value containing shape found on workspace.
+	//shape = roboShapeVision();
 
-	// initialize 2D matrices
-	float** matrix_one = new float*[columns];
-	for (int i = 0; i < rows; i++){
-		matrix_one[i] = new float[rows];
-	}
-	float** matrix_two = new float*[columns];
-	for (int i = 0; i < rows; i++){
-		matrix_two[i] = new float[rows];
-	}
-	float** matrix_three = new float*[columns];
-	for (int i = 0; i < rows; i++){
-		matrix_three[i] = new float[rows];
-	}
-	float** matrix_four = new float*[columns];
-	for (int i = 0; i < rows; i++){
-		matrix_four[i] = new float[rows];
-	}
+	std::cout << "The shape found on the workspace was a " << shape << "." << std::endl;
 
-	float ** base_to_start = new float*[columns];
+	// initialize 4x4 matrices
+	float** RShoulderPitch = new float*[columns];
+	for (int i = 0; i < rows; i++){
+		RShoulderPitch[i] = new float[rows];
+	}
+	float** RShoulderRoll = new float*[columns];
+	for (int i = 0; i < rows; i++){
+		RShoulderRoll[i] = new float[rows];
+	}
+	float** RElbowYaw = new float*[columns];
+	for (int i = 0; i < rows; i++){
+		RElbowYaw[i] = new float[rows];
+	}
+	float** RElbowRoll = new float*[columns];
+	for (int i = 0; i < rows; i++){
+		RElbowRoll[i] = new float[rows];
+	}
+	float** base_to_start = new float*[columns];
 	for (int i = 0; i < rows; i++){
 		base_to_start[i] = new float[rows];
 	}
 
 	// read input file of theta values
+	double theta1 = 0.0, theta2 = 0.0, theta3 = 0.0, theta4 = 0.0;
 	std::string filename = "input.txt";
 	std::ifstream fs;
 	fs.open(filename.c_str());
 	std::cout << "Processing input file...\n" << std::endl;
 
-	// pass theta value per row to specified matrix for Right Arm of NAO Robot
-	double theta = 0.0;
-
-	// RShoulderPitch
-	fs >> theta;
-	matrix_one = transformationMatrix(matrix_one, rows, columns, 0, -(PI / 2.0), 0, theta);
-
-	// RShoulderRoll
-	fs >> theta;
-	matrix_two = transformationMatrix(matrix_two, rows, columns, 0, (PI / 2.0), 0, theta + (PI / 2.0));
-
-	// RElbowYaw
-	fs >> theta;
-	matrix_three = transformationMatrix(matrix_three, rows, columns, -ELBOW_OFFSET_Y, (PI / 2.0), UPPER_ARM_LENGTH, theta);
-
-	// RElbowRoll
-	fs >> theta;
-	matrix_four = transformationMatrix(matrix_four, rows, columns, 0, -(PI / 2.0), 0, theta);
+	// read theta values from input file
+	fs >> theta1;
+	fs >> theta2;
+	fs >> theta3;
+	fs >> theta4;
 
 	// stop reading from input file
 	std::cout << "Finished processing file." << std::endl;
 	fs.close();
 
-	// mulitple matrices together for matrix
-	//base_to_start = matrix_one*matrix_two*matrix_three*matrix_four;
+	// create matrices
+	// pass theta value per row to specified matrix for Right Arm of NAO Robot
+	RShoulderPitch = transformationMatrix(RShoulderPitch, rows, columns, 0, -(PI / 2.0), 0, theta1);
+	RShoulderRoll = transformationMatrix(RShoulderRoll, rows, columns, 0, (PI / 2.0), 0, theta2 + (PI / 2.0));
+	RElbowYaw = transformationMatrix(RElbowYaw, rows, columns, -ELBOW_OFFSET_Y, (PI / 2.0), UPPER_ARM_LENGTH, theta3);
+	RElbowRoll = transformationMatrix(RElbowRoll, rows, columns, 0, -(PI / 2.0), 0, theta4);
 
-	// setup camera / do this async??
-	//setupRobotCamera();
+	// mulitple matrices together for matrix
+	base_to_start = multiplyMatrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll);
 
 	// program exit
 	return 0;
