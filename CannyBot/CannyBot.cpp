@@ -21,8 +21,8 @@ double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, doubl
 void prettyPrint(std::string name, double** matrix);
 std::string roboShapeVision();
 
-int rows = 4;
-int columns = 4;
+const int rows = 4;
+const int columns = 4;
 
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0){
 	double dx1 = pt1.x - pt0.x;
@@ -96,15 +96,17 @@ double** transformationMatrix(std::string name_of_matrix, double** matrix, int r
 }
 
 double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, double** RElbowYaw, double** RElbowRoll) {
-	
-	float**product;
+	double**product = new double*[columns];
+	for (int i = 0; i < rows; i++){
+		product[i] = new double[rows];
+	}
 	for (int i = 0; i < rows; i++)
 	{
 		for (int j = 0; j < columns; j++)
 		{
 			for (int inner = 0; inner < 4; inner++)
 			{
-				product[i][j] = MatrixA[i][inner] * MatrixB[inner][j];
+				product[i][j] = RShoulderPitch[i][inner] * RShoulderRoll[inner][j];
 			}
 		}
 	}
@@ -114,7 +116,7 @@ double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, doubl
 		{
 			for (int inner = 0; inner < 4; inner++)
 			{
-				product[i][j] *= MatrixC[inner][j];
+				product[i][j] *= RElbowYaw[inner][j];
 			}
 		}
 	}
@@ -124,10 +126,11 @@ double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, doubl
 		{
 			for (int inner = 0; inner < 4; inner++)
 			{
-				product[i][j] *= MatrixD[inner][j];
+				product[i][j] *= RElbowRoll[inner][j];
 			}
 		}
 	}
+	return product;
 }
 
 void prettyPrint(std::string name, double** matrix){
