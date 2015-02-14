@@ -33,15 +33,60 @@ static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0){
 float** transformationMatrix(float** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta) {
 	// perform transformation matrix stuff here
 	// theta is the only one changing. which is why a, alpha, and distance is of type const.
+	for (int row = 0; row < 4; row++)
+	{
+		for (int col = 0; col < 4; col++)
+		{
+			if (row == 0 && col == 0)
+				matrix[row][col] = std::cos(theta);
 
-	float ** temp = new float*[columns];
-	for (int i = 0; i < rows; i++){
-		temp[i] = new float[rows];
+			if (row == 0 && col == 1)
+				matrix[row][col] = (-std::sin(theta) * std::cos(alpha));
+
+			if (row == 0 && col == 2)
+				matrix[row][col] = (std::sin(theta) * std::sin(alpha));
+
+			if (row == 0 && col == 3)
+				matrix[row][col] = (a * std::cos(theta));
+
+			if (row == 1 && col == 0)
+				matrix[row][col] = (std::cos(theta) * std::cos(alpha));
+
+			if (row == 1 && col == 1)
+				matrix[row][col] = (-std::cos(theta) * std::sin(alpha));
+
+			if (row == 1 && col == 2)
+				matrix[row][col] = (a * std::sin(theta));
+
+			if (row == 1 && col == 3)
+				matrix[row][col] = 0;
+
+			if (row == 2 && col == 0)
+				matrix[row][col] = std::sin(alpha);
+
+			if (row == 2 && col == 1)
+				matrix[row][col] = std::cos(alpha);
+
+			if (row == 2 && col == 2)
+				matrix[row][col] = std::cos(theta);
+
+			if (row == 2 && col == 3)
+				matrix[row][col] = distance;
+
+			if (row == 3 && col == 0)
+				matrix[row][col] = 0;
+
+			if (row == 3 && col == 1)
+				matrix[row][col] = 0;
+
+			if (row == 3 && col == 2)
+				matrix[row][col] = 0;
+
+			if (row == 3 && col == 3)
+				matrix[row][col] = 1;
+		}
 	}
-
-
-
-	return temp;
+	return matrix;
 }
 
 float** multiplyMatrices(float** RShoulderPitch, float** RShoulderRoll, float** RElbowYaw, float** RElbowRoll) {
