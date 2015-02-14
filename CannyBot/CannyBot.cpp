@@ -96,7 +96,38 @@ double** transformationMatrix(std::string name_of_matrix, double** matrix, int r
 }
 
 double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, double** RElbowYaw, double** RElbowRoll) {
-	return RShoulderPitch;
+	
+	float**product;
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < columns; j++)
+		{
+			for (int inner = 0; inner < 4; inner++)
+			{
+				product[i][j] = MatrixA[i][inner] * MatrixB[inner][j];
+			}
+		}
+	}
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < columns; j++)
+		{
+			for (int inner = 0; inner < 4; inner++)
+			{
+				product[i][j] *= MatrixC[inner][j];
+			}
+		}
+	}
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < columns; j++)
+		{
+			for (int inner = 0; inner < 4; inner++)
+			{
+				product[i][j] *= MatrixD[inner][j];
+			}
+		}
+	}
 }
 
 void prettyPrint(std::string name, double** matrix){
