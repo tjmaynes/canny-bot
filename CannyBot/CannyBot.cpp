@@ -139,127 +139,126 @@ void prettyPrint(std::string name, double** matrix){
 		for (int j = 0; j < columns; j++){
 			if (j == 3){
 				std::cout << std::setw(6) << matrix[i][j] << "\n";
-			} else {
+			}
+			else {
 				std::cout << std::setw(6) << matrix[i][j] << " ";
 			}
 		}
 	}
 	std::cout << " " << std::endl;
 }
-
 /*
 std::string roboShapeVision() {
-std::cout << "Setting up NAO Robot camera!\n" << std::endl;
-std::string shape = "";
+	std::cout << "Setting up NAO Robot camera!\n" << std::endl;
+	std::string shape = "";
 
-cv::VideoCapture camera;
-int camOpen = camera.open(CV_CAP_ANY);
+	cv::VideoCapture camera;
+	int camOpen = camera.open(CV_CAP_ANY);
 
-if (!camera.isOpened()) {
-std::cout << "No Camera" << std::endl;
-}
-cv::namedWindow("CameraCapture", CV_WINDOW_AUTOSIZE);
+	if (!camera.isOpened()) {
+		std::cout << "No Camera" << std::endl;
+	}
+	cv::namedWindow("CameraCapture", CV_WINDOW_AUTOSIZE);
 
-std::vector<std::vector<cv::Point>> contours;
-std::vector<cv::Point> approx;
-cv::Mat image, grayImage, blur, canny;
+	std::vector<std::vector<cv::Point>> contours;
+	std::vector<cv::Point> approx;
+	cv::Mat image, grayImage, blur, canny;
 
-cv::waitKey(3000);
-while (true) {
-camera >> image;
-cv::imshow("Streaming", image);
+	cv::waitKey(3000);
+	while (true) {
+		camera >> image;
+		cv::imshow("Streaming", image);
 
-//cv::imshow("Streaming", image);
+		//cv::imshow("Streaming", image);
 
-// perform canny edge detection algorithm
-if (image.empty())
-break;
-else if (image.channels() > 1)
-cv::cvtColor(image, grayImage, CV_GRAY2RGB);
-else
-grayImage = image;
-cv::GaussianBlur(image, blur, cv::Size(7, 7), 1.5, 1.5);
-cv::Canny(blur, canny, 0, 30, 3);
+		// perform canny edge detection algorithm
+		if (image.empty())
+			break;
+		else if (image.channels() > 1)
+			cv::cvtColor(image, grayImage, CV_GRAY2RGB);
+		else
+			grayImage = image;
+		cv::GaussianBlur(image, blur, cv::Size(7, 7), 1.5, 1.5);
+		cv::Canny(blur, canny, 0, 30, 3);
 
-// show canny window called robovision
-cv::imshow("RoboVision", canny);
+		// show canny window called robovision
+		cv::imshow("RoboVision", canny);
 
+		// break out of contour drawing
+		// Find contours
+		cv::findContours(canny.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-// break out of contour drawing
-// Find contours
-cv::findContours(canny.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+		for (int i = 0; i < contours.size(); i++)
+		{
+			// Approximate contour with accuracy proportional
+			// to the contour perimeter
+			cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
 
-for (int i = 0; i < contours.size(); i++)
-{
-// Approximate contour with accuracy proportional
-// to the contour perimeter
-cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
+			// Skip small or non-convex objects
+			if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
+				continue;
 
-// Skip small or non-convex objects
-if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
-continue;
+			if (approx.size() == 3)
+			{
+				shape = "Triangle"; // Triangles
+				break;
+			}
+			else if (approx.size() >= 4 && approx.size() <= 6)
+			{
+				// Number of vertices of polygonal curve
+				int vtc = approx.size();
 
-if (approx.size() == 3)
-{
-shape = "Triangle"; // Triangles
-break;
-}
-else if (approx.size() >= 4 && approx.size() <= 6)
-{
-// Number of vertices of polygonal curve
-int vtc = approx.size();
+				// Get the cosines of all corners
+				std::vector<double> cos;
+				for (int j = 2; j < vtc + 1; j++)
+					cos.push_back(angle(approx[j%vtc], approx[j - 2], approx[j - 1]));
 
-// Get the cosines of all corners
-std::vector<double> cos;
-for (int j = 2; j < vtc + 1; j++)
-cos.push_back(angle(approx[j%vtc], approx[j - 2], approx[j - 1]));
+				// Sort ascending the cosine values
+				std::sort(cos.begin(), cos.end());
 
-// Sort ascending the cosine values
-std::sort(cos.begin(), cos.end());
+				// Get the lowest and the highest cosine
+				double mincos = cos.front();
+				double maxcos = cos.back();
 
-// Get the lowest and the highest cosine
-double mincos = cos.front();
-double maxcos = cos.back();
+				// Use the degrees obtained above and the number of vertices
+				// to determine the shape of the contour
+				if (vtc == 4){
+					shape = "Rectangle";
+					break;
+				}
+				else if (vtc == 5){
+					shape = "Pentagon";
+					break;
+				}
+				else if (vtc == 6){
+					shape = "Hexagon";
+					break;
+				}
+			}
+			else
+			{
+				// Detect and label circles
+				double area = cv::contourArea(contours[i]);
+				cv::Rect r = cv::boundingRect(contours[i]);
+				int radius = r.width / 2;
 
-// Use the degrees obtained above and the number of vertices
-// to determine the shape of the contour
-if (vtc == 4){
-shape = "Rectangle";
-break;
-}
-else if (vtc == 5){
-shape = "Pentagon";
-break;
-}
-else if (vtc == 6){
-shape = "Hexagon";
-break;
-}
-}
-else
-{
-// Detect and label circles
-double area = cv::contourArea(contours[i]);
-cv::Rect r = cv::boundingRect(contours[i]);
-int radius = r.width / 2;
-
-if (std::abs(1 - ((double)r.width / r.height)) <= 0.2 &&
-std::abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2){
-shape = "Circle";
-break;
-}
-}
-}
-if (cv::waitKey(30) >= 0) {
-break;
-}
-}
-return shape;
+				if (std::abs(1 - ((double)r.width / r.height)) <= 0.2 &&
+					std::abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2){
+					shape = "Circle";
+					break;
+				}
+			}
+		}
+		if (cv::waitKey(30) >= 0) {
+			break;
+		}
+	}
+	return shape;
 }
 */
 int main() {
 	std::cout << "Welcome to the CannyBot program!" << std::endl;
-	std::string shape = "", matrix1 = "RShoulderPitch", matrix2 = "RShoulderRoll", matrix3 = "RElbowYaw", matrix4="RElbowRoll", result_matrix = "base_to_start";
+	std::string shape = "", matrix1 = "RShoulderPitch", matrix2 = "RShoulderRoll", matrix3 = "RElbowYaw", matrix4 = "RElbowRoll", result_matrix = "base_to_start";
 
 	// return string value containing shape found on workspace.
 	//shape = roboShapeVision();
@@ -317,6 +316,9 @@ int main() {
 
 	// print resulting base_to_start matrix
 	prettyPrint(result_matrix, base_to_start);
+
+	// pass shape value to 
+
 
 	// program exit
 	return 0;
