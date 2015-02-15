@@ -1,4 +1,4 @@
---------------------CannyBot--------------------
+----------------------------CannyBot-------------------------------
 getting a robot to draw the shapes it "sees" using image processing
 
 http://stackoverflow.com/a/14945782
@@ -11,9 +11,8 @@ Refrences:
 - http://www.arachnoid.com/cpptutor/student3.html
 
 
+
 Setting up OpenCV v2.4.10 in Visual Studio
-
-
 
 Installation
 - Download OpenCV v2.4.10 from https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.10/opencv-2.4.10.exe/download.
@@ -33,7 +32,7 @@ Linker
 Additional Library Directories:
 C:\opencv\build\x86\vc12\lib
 
-Additional Dependencies:
+Additional Dependencies (copy and paste):
 opencv_stitching2410d.lib
 opencv_contrib2410d.lib
 opencv_videostab2410d.lib
