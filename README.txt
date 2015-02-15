@@ -1,18 +1,24 @@
-CannyBot
+--------------------CannyBot--------------------
 getting a robot to draw the shapes it "sees" using image processing
 
 http://stackoverflow.com/a/14945782
 
 Refrences:
-http://docs.opencv.org/doc/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html
-http://www.fanjita.org/serendipity/archives/57-Capturing-webcam-video-with-OpenCV-on-Raspberry-Pi-Arch-Linux.html
-http://stackoverflow.com/questions/11987483/opencvs-canny-edge-detection-in-c
+- http://docs.opencv.org/doc/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html
+- http://www.fanjita.org/serendipity/archives/57-Capturing-webcam-video-with-OpenCV-on-Raspberry-Pi-Arch-Linux.html
+- http://stackoverflow.com/questions/11987483/opencvs-canny-edge-detection-in-c
+- https://opencvproject.wordpress.com/projects-files/detection-shape/
+- http://www.arachnoid.com/cpptutor/student3.html
+
 
 Setting up OpenCV v2.4.10 in Visual Studio
+
+
+
 Installation
-Download OpenCV v2.4.10 from https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.10/opencv-2.4.10.exe/download.
-Unzip and put opencv folder in location C:\
-rename opencv folder to "opencv"
+- Download OpenCV v2.4.10 from https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.10/opencv-2.4.10.exe/download.
+- Unzip and put opencv folder in location C:\
+- rename opencv folder to "opencv"
 
 Add System Environment Variable to PATH
 C:\opencv\build\x86\vc12\bin
