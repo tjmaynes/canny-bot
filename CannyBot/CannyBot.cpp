@@ -280,6 +280,7 @@ std::string roboShapeVision() {
 	cv::waitKey(3000);
 
 	// breakout of loop when shape is found
+	/*while (cvWaitKey(30) != 'q') {*/
 	while (!breakout) {
 		camera >> image;
 		if (true){
@@ -314,7 +315,7 @@ std::string roboShapeVision() {
 					{
 						setLabel(dst, "TRI", contours[i]);
 						shape = "Triangle"; // Triangles
-						breakout = true;
+						//breakout = true;
 					}
 					else if (approx.size() >= 4 && approx.size() <= 6)
 					{
@@ -338,17 +339,17 @@ std::string roboShapeVision() {
 						if (vtc == 4){
 							setLabel(dst, "RECT", contours[i]);
 							shape = "Rectangle";
-							breakout = true;
+							//breakout = true;
 						}
 						else if (vtc == 5){
 							setLabel(dst, "PEN", contours[i]);
 							shape = "Pentagon";
-							breakout = true;
+							//breakout = true;
 						}
 						else if (vtc == 6){
 							setLabel(dst, "HEX", contours[i]);
 							shape = "Hexagon";
-							breakout = true;
+							//breakout = true;
 						}
 					}
 					else
@@ -363,7 +364,7 @@ std::string roboShapeVision() {
 						{
 							setLabel(dst, "CIR", contours[i]);
 							shape = "Circle";
-							breakout = true;
+							//breakout = true;
 						}
 					}
 					if (breakout){
