@@ -28,6 +28,14 @@ double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, doubl
 void prettyPrint(std::string name, double** matrix);
 std::string roboShapeVision();
 
+// helper functions
+static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0){
+	double dx1 = pt1.x - pt0.x;
+	double dy1 = pt1.y - pt0.y;
+	double dx2 = pt2.x - pt0.x;
+	double dy2 = pt2.y - pt0.y;
+	return (dx1*dx2 + dy1*dy2) / sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
+}
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour)
 {
 	int fontface = cv::FONT_HERSHEY_SIMPLEX;
@@ -42,17 +50,6 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 	cv::rectangle(im, pt + cv::Point(0, baseline), pt + cv::Point(text.width, -text.height), CV_RGB(255, 255, 255), CV_FILLED);
 	cv::putText(im, label, pt, fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
 }
-
-
-// helper functions
-static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0){
-	double dx1 = pt1.x - pt0.x;
-	double dy1 = pt1.y - pt0.y;
-	double dx2 = pt2.x - pt0.x;
-	double dy2 = pt2.y - pt0.y;
-	return (dx1*dx2 + dy1*dy2) / sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
-}
-
 void prettyPrint(std::string name, double** matrix){
 	std::cout << "\nThis is matrix = " << name << ".\n" << std::endl;
 	for (int i = 0; i < rows; i++){
@@ -251,8 +248,6 @@ double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, doubl
 	}
 	return product4;
 }
-
-
 // captures object very quickly...
 // need to make sure camera is already looking at workspace!
 //
@@ -282,7 +277,11 @@ std::string roboShapeVision() {
 	// breakout of loop when shape is found
 	/*while (cvWaitKey(30) != 'q') {*/
 	while (!breakout) {
+		// wait 1 seconds for robo camera to be ready
+		cv::waitKey(1000);
+
 		camera >> image;
+
 		if (true){
 			// perform canny edge detection algorithm
 			cv::cvtColor(image, grayImage, CV_RGB2GRAY);
@@ -315,7 +314,7 @@ std::string roboShapeVision() {
 					{
 						setLabel(dst, "TRI", contours[i]);
 						shape = "Triangle"; // Triangles
-						//breakout = true;
+						breakout = true;
 					}
 					else if (approx.size() >= 4 && approx.size() <= 6)
 					{
@@ -339,17 +338,17 @@ std::string roboShapeVision() {
 						if (vtc == 4){
 							setLabel(dst, "RECT", contours[i]);
 							shape = "Rectangle";
-							//breakout = true;
+							breakout = true;
 						}
 						else if (vtc == 5){
 							setLabel(dst, "PEN", contours[i]);
 							shape = "Pentagon";
-							//breakout = true;
+							breakout = true;
 						}
 						else if (vtc == 6){
 							setLabel(dst, "HEX", contours[i]);
 							shape = "Hexagon";
-							//breakout = true;
+							breakout = true;
 						}
 					}
 					else
@@ -364,7 +363,7 @@ std::string roboShapeVision() {
 						{
 							setLabel(dst, "CIR", contours[i]);
 							shape = "Circle";
-							//breakout = true;
+							breakout = true;
 						}
 					}
 					if (breakout){
