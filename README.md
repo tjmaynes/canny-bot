@@ -1,12 +1,12 @@
----------------------------CannyBot--------------------------------
+# CannyBot
 getting a robot to draw the shapes it "sees" using image processing
 
-Refrences:
-- http://docs.opencv.org/doc/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html
-- http://www.fanjita.org/serendipity/archives/57-Capturing-webcam-video-with-OpenCV-on-Raspberry-Pi-Arch-Linux.html
-- http://stackoverflow.com/questions/11987483/opencvs-canny-edge-detection-in-c
-- https://opencvproject.wordpress.com/projects-files/detection-shape/
-- http://www.arachnoid.com/cpptutor/student3.html
+Currently only works with Windows (still testing on OSX)!
+
+## Installation
+
+On Windows:
+* http://docs.opencv.org/trunk/doc/py_tutorials/py_setup/py_setup_in_windows/py_setup_in_windows.html
 
 On OSX:
 * brew tap homebrew/science
@@ -17,9 +17,6 @@ On OSX:
 * ln -s /usr/local/Cellar/opencv/2.x.x/lib/python2.7/site-packages/cv2.so cv2.so
 * Done!
 
-On Windows:
-* http://docs.opencv.org/trunk/doc/py_tutorials/py_setup/py_setup_in_windows/py_setup_in_windows.html
-
 On Ubuntu:
 * sudo apt-get update
 * sudo apt-get upgrade
@@ -28,3 +25,11 @@ On Ubuntu:
 * sudo apt-get install python-dev python-tk python-numpy python3-dev python3-tk python3-numpy
 * sudo apt-get install sudo apt-get install libopencv-dev
 * Done!
+
+## Refrences
+
+- http://docs.opencv.org/doc/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html
+- http://www.fanjita.org/serendipity/archives/57-Capturing-webcam-video-with-OpenCV-on-Raspberry-Pi-Arch-Linux.html
+- http://stackoverflow.com/questions/11987483/opencvs-canny-edge-detection-in-c
+- https://opencvproject.wordpress.com/projects-files/detection-shape/
+- http://www.arachnoid.com/cpptutor/student3.html

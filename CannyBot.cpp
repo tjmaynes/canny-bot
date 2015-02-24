@@ -5,17 +5,16 @@
 #include <sstream>
 #include <iomanip>
 #include <math.h>
-//#include <alcommon/alproxy.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 // Global variables
 #define PI 3.14159265
-#define ELBOW_OFFSET_Y 15
-#define UPPER_ARM_LENGTH 105
-#define SHOULDER_OFFSET_Y 98
-#define SHOULDER_OFFSET_Z 100
+#define ELBOW_OFFSET_Y 15.00
+#define UPPER_ARM_LENGTH 105.00
+#define SHOULDER_OFFSET_Y 98.00
+#define SHOULDER_OFFSET_Z 100.00
 #define LOWER_ARM_LENGTH 55.95
 
 const int rows = 4;
@@ -172,14 +171,10 @@ double** transformationMatrix(std::string name_of_matrix, double** matrix, int r
 		}
 	}
 
-	// print resulting matrix
-	prettyPrint(name_of_matrix, matrix);
-
 	return matrix;
 }
 // multiply matrices
 double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, double** RElbowYaw, double** RElbowRoll, double** RWristRoll) {
-	double temp = 0.0;
 	// create matrix
 	double** product1 = new double*[columns];
 	for (int i = 0; i < rows; i++){
@@ -256,7 +251,7 @@ std::string roboShapeVision() {
 	std::string shape = "";
 
 	bool breakout = false;
-	std::vector<std::vector<cv::Point>> contours;
+	std::vector<std::vector<cv::Point>>> contours;
 	std::vector<cv::Point> approx;
 	cv::Mat image, grayImage, blur, canny, dst;
 	int lowThreshold;
@@ -438,19 +433,25 @@ int main() {
 	// create matrices
 	// pass theta value per row to specified matrix for Right Arm of NAO Robot
 	RShoulderPitch = transformationMatrix("RShoulderPitch", RShoulderPitch, rows, columns, 0, -(PI / 2.0), 0, theta1);
-	RShoulderRoll = transformationMatrix("RShoulderRoll", RShoulderRoll, rows, columns, 0, (PI / 2.0), 0, theta2 + (PI / 2.0));
-	RElbowYaw = transformationMatrix("RElbowYaw", RElbowYaw, rows, columns, -ELBOW_OFFSET_Y, (PI / 2.0), UPPER_ARM_LENGTH, theta3);
-	RElbowRoll = transformationMatrix("RElbowRoll", RElbowRoll, rows, columns, 0, -(PI / 2.0), 0, theta4);
-	RWristRoll = transformationMatrix("RWristYRoll", RWristRoll, rows, columns, LOWER_ARM_LENGTH, (PI / 2.0), 0, theta5);
+	prettyPrint("RShoulderPitch", RShoulderPitch);
 
+	RShoulderRoll = transformationMatrix("RShoulderRoll", RShoulderRoll, rows, columns, 0, (PI / 2.0), 0, theta2 + (PI / 2.0));
+        prettyPrint("RShoulderRoll", RShoulderRoll);
+        
+	RElbowYaw = transformationMatrix("RElbowYaw", RElbowYaw, rows, columns, -ELBOW_OFFSET_Y, (PI / 2.0), UPPER_ARM_LENGTH, theta3);
+        prettyPrint("RElbowYaw", RElbowYaw);
+
+	RElbowRoll = transformationMatrix("RElbowRoll", RElbowRoll, rows, columns, 0, -(PI / 2.0), 0, theta4);
+        prettyPrint("RElbowRoll", RElbowRoll);
+        
+	RWristRoll = transformationMatrix("RWristYRoll", RWristRoll, rows, columns, LOWER_ARM_LENGTH, (PI / 2.0), 0, theta5);
+        prettyPrint("RWristYRoll", RWristRoll);
+        
 	// mulitple matrices together for matrix
 	base_to_start = multiplyMatrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristRoll);
-
-	// print resulting base_to_start matrix
 	prettyPrint("base_to_start", base_to_start);
 
 	// pass shape value to somewhere
-
 
 	// program exit
 	std::cout << "\nend of program" << std::endl;
