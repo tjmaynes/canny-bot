@@ -4,13 +4,12 @@
 import os, sys, math, time
 import cv2.cv as cv
 
-"""
+# opencv camera capture setup
 cv.NamedWindow('RoboVision', 1)
 cv.NamedWindow('HumanVision', 2)
 cap = cv.CaptureFromCAM(-1)
 cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_HEIGHT, 240)
 cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_WIDTH, 320)
-"""
 
 # helper functions and values
 
@@ -142,8 +141,6 @@ def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, dista
                 matrix[i][j] = 0.0
             if i == 3 and j == 3:
                 matrix[i][j] = 1.0
-
-    pretty_print(name_of_matrix, matrix)
     return matrix
 
 def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristRoll):
@@ -177,9 +174,9 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
     return m3
     
 if __name__ == '__main__':
-    print("Welcome to the CannyBot Program!")
-    #shape = roboVision()
-    #print("The shape found on the workspace was a %d", shape)
+    print("\nWelcome to the CannyBot Program!\n")
+    shape = roboVision()
+    print("The shape found on the workspace was a %d", shape)
 
     # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
@@ -203,14 +200,17 @@ if __name__ == '__main__':
 
     # transformation matrices
     RShoulderPitch = transformation_matrix("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
+    pretty_print("RShoulderPitch", RShoulderPitch)
     RShoulderRoll = transformation_matrix("RShoulderRoll",RShoulderRoll,rows,columns,0,math.pi/2.0, 0, float(theta1) + (math.pi/2.0))
-    
+    pretty_print("RShoulderRoll", RShoulderRoll)
     RElbowYaw = transformation_matrix("RElbowYaw",RElbowYaw,rows,columns,-ELBOW_OFFSET_Y, (math.pi / 2.0), UPPER_ARM_LENGTH, float(theta2))
-    
+    pretty_print("RElbowYaw",RElbowYaw)
     RElbowRoll = transformation_matrix("RElbowRoll",RElbowRoll,rows,columns,0, -(math.pi / 2.0), 0, float(theta3))
+    pretty_print("RElbowRoll",RElbowRoll)
     RWristRoll = transformation_matrix("RWristRoll",RWristRoll,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
-
+    pretty_print("RWristRoll",RWristRoll)
     base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristRoll)
     pretty_print("base_to_start", base_to_start)
-    
+
+    # end of line
     print("End of Program.")
