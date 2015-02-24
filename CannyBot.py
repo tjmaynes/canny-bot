@@ -5,6 +5,8 @@ import os, sys, math, time, motion, almath
 import cv2.cv as cv
 from naoqi import ALProxy
 
+robotIP = "169.254.226.148"
+
 # connect to NAO Robot
 try:
     motionProxy = ALProxy("ALMotion", robotIP, 9559)
