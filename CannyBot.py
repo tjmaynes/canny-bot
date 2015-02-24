@@ -50,7 +50,7 @@ def robo_vision():
 
         # only return value when you find a circle or square
         for cnt in contours:
-            approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
+            approx = cv.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
             print len(approx)
             if len(approx)==5:
                 print "pentagon"
@@ -175,7 +175,7 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
     
 if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
-    shape = roboVision()
+    shape = robo_vision()
     print("The shape found on the workspace was a %d", shape)
 
     # initialize matrices
