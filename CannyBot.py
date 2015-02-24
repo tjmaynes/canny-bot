@@ -1,8 +1,21 @@
 # Filename: CannyBot.py
 # Authors: Tommy Lin, TJ Maynes
 
-import os, sys, math, time
+import os, sys, math, time, motion, almath
 import cv2.cv as cv
+from naoqi import ALProxy
+
+# connect to NAO Robot
+try:
+    motionProxy = ALProxy("ALMotion", robotIP, 9559)
+except Exception, e:
+    print "Could not create proxy to ALMotion"
+    print "Error was: ", e
+try:
+    postureProxy = ALProxy("ALRobotPosture", robotIP, 9559)
+except Exception, e:
+    print "Could not create proxy to ALRobotPosture"
+    print "Error was: ", e
 
 # opencv camera capture setup
 cv.NamedWindow('RoboVision', 1)
@@ -27,6 +40,37 @@ def pretty_print(name, matrix):
         print row
 
 # main functions
+def robo_motion(shape):
+    print "\nNAO Robot will draw this shape: " + shape + "."
+    # Set NAO in Stiffness On
+    StiffnessOn(motionProxy)
+
+    # Send NAO to Pose Init
+    postureProxy.goToPosture("StandInit", 0.5)
+
+    effector   = "RArm"
+    space      = motion.FRAME_ROBOT
+    axisMask   = almath.AXIS_MASK_VEL    # just control position
+    isAbsolute = False
+
+    # Since we are in relative, the current position is zero
+    currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    # Define the changes relative to the current position
+    dx         =  0.03      # translation axis X (meters)
+    dy         =  0.03      # translation axis Y (meters)
+    dz         =  0.00      # translation axis Z (meters)
+    dwx        =  0.00      # rotation axis X (radians)
+    dwy        =  0.00      # rotation axis Y (radians)
+    dwz        =  0.00      # rotation axis Z (radians)
+    targetPos  = [dx, dy, dz, dwx, dwy, dwz]
+
+    # Go to the target and back again
+    path       = [targetPos, currentPos]
+    times      = [2.0, 4.0] # seconds
+
+    motionProxy.positionInterpolation(effector, space, path,
+                                      axisMask, times, isAbsolute)
 
 def robo_vision():
     while True:
@@ -144,7 +188,6 @@ def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, dista
     return matrix
 
 def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristRoll):
-
     # initialize temp matrices
     m0 = [[0 for x in range(4)] for x in range(4)]
     m1 = [[0 for x in range(4)] for x in range(4)]
@@ -212,5 +255,8 @@ if __name__ == '__main__':
     base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristRoll)
     pretty_print("base_to_start", base_to_start)
 
+    # make movement
+    robo_motion(shape)
+    
     # end of line
     print("End of Program.")
