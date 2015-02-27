@@ -2,7 +2,7 @@
 # Authors: Tommy Lin, TJ Maynes
 
 import os, sys, math, time, motion, almath
-import cv2.cv as cv
+#import cv2.cv as cv
 from naoqi import ALProxy
 
 robotIP = "169.254.226.148"
@@ -18,14 +18,14 @@ try:
 except Exception, e:
     print "Could not create proxy to ALRobotPosture"
     print "Error was: ", e
-
+"""
 # opencv camera capture setup
 cv.NamedWindow('RoboVision', 1)
 cv.NamedWindow('HumanVision', 2)
 cap = cv.CaptureFromCAM(-1)
 cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_HEIGHT, 240)
 cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_WIDTH, 320)
-
+"""
 # helper functions and values
 
 rows = 4
@@ -35,6 +35,14 @@ UPPER_ARM_LENGTH = 105
 SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
 LOWER_ARM_LENGTH = 55.95
+
+def StiffnessOn(proxy):
+  #We use the "Body" name to signify the collection of all joints
+  pNames = "Body"
+  pStiffnessLists = 1.0
+  pTimeLists = 1.0
+  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+
 
 def pretty_print(name, matrix):
     print "\nThis is matrix = " + name
@@ -51,7 +59,7 @@ def robo_motion(shape):
     postureProxy.goToPosture("StandInit", 0.5)
 
     effector   = "RArm"
-    space      = motion.FRAME_ROBOT
+    space      = 2#motion.FRAME_ROBOT
     axisMask   = almath.AXIS_MASK_VEL    # just control position
     isAbsolute = False
 
@@ -59,7 +67,7 @@ def robo_motion(shape):
     currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     # Define the changes relative to the current position
-    dx         =  0.03      # translation axis X (meters)
+    dx         =  0.06      # translation axis X (meters)
     dy         =  0.03      # translation axis Y (meters)
     dz         =  0.00      # translation axis Z (meters)
     dwx        =  0.00      # rotation axis X (radians)
@@ -69,7 +77,7 @@ def robo_motion(shape):
 
     # Go to the target and back again
     path       = [targetPos, currentPos]
-    times      = [2.0, 4.0] # seconds
+    times      = [2.0, 10.0] # seconds
 
     motionProxy.positionInterpolation(effector, space, path,
                                       axisMask, times, isAbsolute)
@@ -220,8 +228,8 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
     
 if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
-    shape = robo_vision()
-    print("The shape found on the workspace was a %d", shape)
+    #shape = robo_vision()
+    #print("The shape found on the workspace was a %d", shape)
 
     # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
@@ -258,7 +266,7 @@ if __name__ == '__main__':
     pretty_print("base_to_start", base_to_start)
 
     # make movement
-    robo_motion(shape)
+    robo_motion("tj")
     
     # end of line
     print("End of Program.")
