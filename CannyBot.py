@@ -2,12 +2,12 @@
 # Authors: Tommy Lin, TJ Maynes
 
 import os, sys, math, time, motion, almath
-#import cv2.cv as cv
+import cv2.cv as cv
 from naoqi import ALProxy
 
 robotIP = "169.254.226.148"
 
-# connect to NAO Robot
+# set up connection to NAO Robot
 try:
     motionProxy = ALProxy("ALMotion", robotIP, 9559)
 except Exception, e:
@@ -18,16 +18,15 @@ try:
 except Exception, e:
     print "Could not create proxy to ALRobotPosture"
     print "Error was: ", e
-"""
+
 # opencv camera capture setup
 cv.NamedWindow('RoboVision', 1)
 cv.NamedWindow('HumanVision', 2)
 cap = cv.CaptureFromCAM(-1)
 cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_HEIGHT, 240)
 cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_WIDTH, 320)
-"""
-# helper functions and values
 
+# helper functions and values
 rows = 4
 columns = 4
 ELBOW_OFFSET_Y = 15
@@ -36,20 +35,19 @@ SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
 LOWER_ARM_LENGTH = 55.95
 
-def StiffnessOn(proxy):
-  #We use the "Body" name to signify the collection of all joints
-  pNames = "Body"
-  pStiffnessLists = 1.0
-  pTimeLists = 1.0
-  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
-
-
 def pretty_print(name, matrix):
     print "\nThis is matrix = " + name
     for row in matrix:
         print row
 
 # main functions
+def StiffnessOn(proxy):
+  #We use the "Body" name to signify the collection of all joints
+  pNames = "Body"
+  pStiffnessLists = 1.0
+  pTimeLists = 1.0
+  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+ 
 def robo_motion(shape):
     print "\nNAO Robot will draw this shape: " + shape + "."
     # Set NAO in Stiffness On
