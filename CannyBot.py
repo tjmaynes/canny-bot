@@ -7,18 +7,6 @@ from naoqi import ALProxy
 
 robotIP = "169.254.226.148"
 
-# set up connection to NAO Robot
-try:
-    motionProxy = ALProxy("ALMotion", robotIP, 9559)
-except Exception, e:
-    print "Could not create proxy to ALMotion"
-    print "Error was: ", e
-try:
-    postureProxy = ALProxy("ALRobotPosture", robotIP, 9559)
-except Exception, e:
-    print "Could not create proxy to ALRobotPosture"
-    print "Error was: ", e
-
 # opencv camera capture setup
 cv.NamedWindow('RoboVision', 1)
 cv.NamedWindow('HumanVision', 2)
@@ -41,6 +29,18 @@ def pretty_print(name, matrix):
         print row
 
 # main functions
+def connect_to_NAO():
+    try:
+        motionProxy = ALProxy("ALMotion", robotIP, 9559)
+    except Exception, e:
+        print "Could not create proxy to ALMotion"
+        print "Error was: ", e
+    try:
+        postureProxy = ALProxy("ALRobotPosture", robotIP, 9559)
+    except Exception, e:
+        print "Could not create proxy to ALRobotPosture"
+        print "Error was: ", e
+
 def StiffnessOn(proxy):
   #We use the "Body" name to signify the collection of all joints
   pNames = "Body"
@@ -226,6 +226,7 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
     
 if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
+    connect_to_NAO()
     #shape = robo_vision()
     #print("The shape found on the workspace was a %d", shape)
 
