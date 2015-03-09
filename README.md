@@ -3,6 +3,9 @@ getting a robot to draw the shapes it "sees" using image processing
 
 Currently only works with Windows (still testing on OSX)!
 
+To run just type,
+* python CannyBot.py
+
 ## Installation
 
 On Windows:
