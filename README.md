@@ -3,7 +3,7 @@ getting a robot to draw the shapes it "sees" using image processing
 
 Currently only works with Windows (still testing on OSX)!
 
-## Installation
+## Python Setup
 
 On Windows:
 * http://docs.opencv.org/trunk/doc/py_tutorials/py_setup/py_setup_in_windows/py_setup_in_windows.html
@@ -26,10 +26,10 @@ On Ubuntu:
 * sudo apt-get install sudo apt-get install libopencv-dev
 * Done!
 
-# Setting up OpenCV v2.4.10 in Visual Studio
+## C++ Setup in Visual Studio
 
 ## Installation
-* Download OpenCV v2.4.10 from https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.10/opencv-2.4.10.exe/download.
+* Download OpenCV v2.4.10 from [here]( https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.4.10/opencv-2.4.10.exe/download).
 * Unzip and put opencv folder in location C:\{opencv}
 * rename opencv folder to "opencv"
 
