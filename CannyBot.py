@@ -1,20 +1,19 @@
 # Filename: CannyBot.py
 # Authors: Tommy Lin, TJ Maynes
 
-import os, sys, math, time, motion, almath
+import os, sys, math, motion, almath
+from PIL import ImageChops
+import Image
+from numpy import *
 import cv2.cv as cv
 from naoqi import ALProxy
 
-robotIP = "169.254.226.148"
+"""
 
-# opencv camera capture setup
-cv.NamedWindow('RoboVision', 1)
-cv.NamedWindow('HumanVision', 2)
-cap = cv.CaptureFromCAM(-1)
-cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_HEIGHT, 240)
-cv.SetCaptureProperty(cap, cv.CV_CAP_PROP_FRAME_WIDTH, 320)
+helper functions and values
 
-# helper functions and values
+"""
+
 rows = 4
 columns = 4
 ELBOW_OFFSET_Y = 15
@@ -22,48 +21,136 @@ UPPER_ARM_LENGTH = 105
 SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
 LOWER_ARM_LENGTH = 55.95
+ip = "169.254.226.148"
+port = 9559
+eyes = None
+video_proxy = None
+video_client = None
+pilcolorspace = "RGB"
+resolution = 2
+colorSpace = 11
+fps = 30
 
 def pretty_print(name, matrix):
     print "\nThis is matrix = " + name
     for row in matrix:
         print row
 
-# main functions
-def connect_to_NAO():
-    try:
-        motionProxy = ALProxy("ALMotion", robotIP, 9559)
-    except Exception, e:
-        print "Could not create proxy to ALMotion"
-        print "Error was: ", e
-    try:
-        postureProxy = ALProxy("ALRobotPosture", robotIP, 9559)
-    except Exception, e:
-        print "Could not create proxy to ALRobotPosture"
-        print "Error was: ", e
+"""
 
-def StiffnessOn(proxy):
-  #We use the "Body" name to signify the collection of all joints
-  pNames = "Body"
-  pStiffnessLists = 1.0
-  pTimeLists = 1.0
-  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
- 
+connect to NAO Robot
+
+"""
+
+try:
+    motionProxy = ALProxy("ALMotion", ip, port)
+except Exception, e:
+    print "Could not create proxy to ALMotion"
+    print "Error was: ", e
+try:
+    postureProxy = ALProxy("ALRobotPosture", ip, port)
+except Exception, e:
+    print "Could not create proxy to ALRobotPosture"
+    print "Error was: ", e
+
+"""
+
+main functions
+    
+"""
+    
+def stiffness_on(proxy):
+    #We use the "Body" name to signify the collection of all joints
+    pNames = "Body"
+    pStiffnessLists = 1.0
+    pTimeLists = 1.0
+    proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+    
+def robo_vision():
+    while True:
+        # set up data structure for shape
+        shape_name = ""
+        start_pos = 0.0
+        way_points = []
+        shape = [shape_name, start_pos, way_points]
+        
+        video_proxy = ALProxy("ALVideoDevice", ip, port)
+        video_client = video_proxy.subscribe("eyes", resolution, colorSpace, fps)
+
+        # Get a camera image.
+        # image[6] contains the image data passed as an array of ASCII chars.
+        naoImage = camProxy.getImageRemote(video_client)
+
+        # Time the image transfer.
+        print "acquisition delay ", t1 - t0
+        
+        camProxy.unsubscribe(video_client)
+
+        # Now we work with the image returned and run
+
+        # Get the image size and pixel array.
+        imageWidth = naoImage[0]
+        imageHeight = naoImage[1]
+        frame = naoImage[6]
+
+        # display image from Robot Camera
+        cv.ShowImage('RoboVision', frame)
+
+        # Convert to greyscale
+        grey = cv.CreateImage(cv.GetSize(frame), frame.depth, 1)
+        cv.CvtColor(frame, grey, cv.CV_RGB2GRAY)
+
+        # Gaussian blur to remove noise
+        blur = cv.CreateImage(cv.GetSize(grey), cv.IPL_DEPTH_8U, grey.channels)
+        cv.Smooth(grey, blur, cv.CV_GAUSSIAN, 5, 5)
+            
+        # And do Canny edge detection
+        canny = cv.CreateImage(cv.GetSize(blur), blur.depth, blur.channels)
+        cv.Canny(blur, canny, 10, 100, 3)
+        cv.ShowImage('RoboVision', canny)
+
+        contours,h = cv.findContours(canny,1,2)
+            
+        # only return value when you find a circle or square
+        for cnt in contours:
+            approx = cv.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
+            print len(approx)
+            if len(approx)==5:
+                return ["pentagon", 0.0, [0.0,0.1,1.0]]
+                #cv.drawContours(img,[cnt],0,255,-1)
+            elif len(approx)==3:
+                return ["triangle", 0.0, [0.0,0.1,1.0]]
+                #cv.drawContours(img,[cnt],0,(0,255,0),-1)
+            elif len(approx)==4:
+                return ["square", 0.0, [0.0,0.1,1.0]]
+                #cv.drawContours(img,[cnt],0,(0,0,255),-1)
+            elif len(approx) == 9:
+                return ["half-circle", 0.0, [0.0,0.1,1.0]]
+                #cv.drawContours(img,[cnt],0,(255,255,0),-1)
+            elif len(approx) > 15:
+                return ["circle", 0.0, [0.0,0.1,1.0]]
+                #cv.drawContours(img,[cnt],0,(0,255,255),-1)
+
+        c = cv.WaitKey(50)
+        if c == 27:
+            exit(0)
+                
 def robo_motion(shape):
     print "\nNAO Robot will draw this shape: " + shape + "."
     # Set NAO in Stiffness On
-    StiffnessOn(motionProxy)
+    stiffness_on(motionProxy)
 
     # Send NAO to Pose Init
     postureProxy.goToPosture("StandInit", 0.5)
 
     effector   = "RArm"
-    space      = 2#motion.FRAME_ROBOT
+    space      = 2 #motion.FRAME_ROBOT
     axisMask   = almath.AXIS_MASK_VEL    # just control position
     isAbsolute = False
 
     # Since we are in relative, the current position is zero
     currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
+    
     # Define the changes relative to the current position
     dx         =  0.06      # translation axis X (meters)
     dy         =  0.03      # translation axis Y (meters)
@@ -79,50 +166,6 @@ def robo_motion(shape):
 
     motionProxy.positionInterpolation(effector, space, path,
                                       axisMask, times, isAbsolute)
-
-def robo_vision():
-    while True:
-        frame = cv.QueryFrame(cap)
-        cv.ShowImage('HumanVision', frame)
-        
-        # Convert to greyscale
-        grey = cv.CreateImage(cv.GetSize(frame), frame.depth, 1)
-        cv.CvtColor(frame, grey, cv.CV_RGB2GRAY)
-  
-        # Gaussian blur to remove noise
-        blur = cv.CreateImage(cv.GetSize(grey), cv.IPL_DEPTH_8U, grey.channels)
-        cv.Smooth(grey, blur, cv.CV_GAUSSIAN, 5, 5)
- 
-        # And do Canny edge detection
-        canny = cv.CreateImage(cv.GetSize(blur), blur.depth, blur.channels)
-        cv.Canny(blur, canny, 10, 100, 3)
-        cv.ShowImage('RoboVision', canny)
-
-        contours,h = cv.findContours(canny,1,2)
-
-        # only return value when you find a circle or square
-        for cnt in contours:
-            approx = cv.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
-            print len(approx)
-            if len(approx)==5:
-                print "pentagon"
-                cv.drawContours(img,[cnt],0,255,-1)
-            elif len(approx)==3:
-                print "triangle"
-                cv.drawContours(img,[cnt],0,(0,255,0),-1)
-            elif len(approx)==4:
-                return "square"
-                cv.drawContours(img,[cnt],0,(0,0,255),-1)
-            elif len(approx) == 9:
-                print "half-circle"
-                cv.drawContours(img,[cnt],0,(255,255,0),-1)
-            elif len(approx) > 15:
-                return "circle"
-                cv.drawContours(img,[cnt],0,(0,255,255),-1)
-
-        c = cv.WaitKey(50)
-        if c == 27:
-            exit(0)
 
 def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
     temp = 0.0
@@ -223,23 +266,22 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
                 m3[i][j] = round(m3[i][j]+m2[i][inner]*RWristRoll[inner][j])
 
     return m3
-    
+
 if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
-    connect_to_NAO()
-    #shape = robo_vision()
-    #print("The shape found on the workspace was a %d", shape)
-
+    shape = robo_vision()
+    print("The shape found on the workspace was a %d", shape[0])
+    
     # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
     RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
     RElbowYaw = [[0 for x in range(4)] for x in range(4)]
     RElbowRoll = [[0 for x in range(4)] for x in range(4)]
-    RWristRoll = [[0 for x in range(4)] for x in range(4)] 
+    RWristRoll = [[0 for x in range(4)] for x in range(4)]
     base_to_start = [[0 for x in range(4)] for x in range(4)]
 
     # process file
-    print("Processing files in input.txt")
+    print("Processing files in input.txt.")
     f = open('input.txt', 'r')
     theta0 = f.readline()
     theta1 = f.readline()
@@ -265,7 +307,7 @@ if __name__ == '__main__':
     pretty_print("base_to_start", base_to_start)
 
     # make movement
-    robo_motion("tj")
-    
+    robo_motion(shape)
+
     # end of line
     print("End of Program.")
