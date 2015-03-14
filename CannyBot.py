@@ -30,6 +30,11 @@ pilcolorspace = "RGB"
 resolution = 2
 colorSpace = 11
 fps = 30
+shape_name = ""
+start_pos = 0.0
+way_points = []
+shape = [shape_name, start_pos, way_points]
+
 
 def pretty_print(name, matrix):
     print "\nThis is matrix = " + name
@@ -38,10 +43,9 @@ def pretty_print(name, matrix):
 
 """
 
-connect to NAO Robot
-
+connect to NAO Robot on startup
+    
 """
-
 try:
     motionProxy = ALProxy("ALMotion", ip, port)
 except Exception, e:
@@ -58,7 +62,14 @@ except Exception, e:
 main functions
     
 """
-    
+def connect_camera():
+    video_proxy = ALProxy("ALVideoDevice", ip, port)
+    video_client = video_proxy.subscribe("eyes", resolution, colorSpace, fps)
+        
+def disconnect_camera():
+    video_proxy.unsubscribe(video_client)    
+    video_proxy = None
+
 def stiffness_on(proxy):
     #We use the "Body" name to signify the collection of all joints
     pNames = "Body"
@@ -68,23 +79,15 @@ def stiffness_on(proxy):
     
 def robo_vision():
     while True:
-        # set up data structure for shape
-        shape_name = ""
-        start_pos = 0.0
-        way_points = []
-        shape = [shape_name, start_pos, way_points]
-        
-        video_proxy = ALProxy("ALVideoDevice", ip, port)
-        video_client = video_proxy.subscribe("eyes", resolution, colorSpace, fps)
+        # connect to camera
+        connect_camera()
 
         # Get a camera image.
         # image[6] contains the image data passed as an array of ASCII chars.
         naoImage = camProxy.getImageRemote(video_client)
 
-        # Time the image transfer.
-        print "acquisition delay ", t1 - t0
-        
-        camProxy.unsubscribe(video_client)
+        # disconnect from camera
+        disconnect_camera()
 
         # Now we work with the image returned and run
 
@@ -137,7 +140,6 @@ def robo_vision():
                 
 def robo_motion(shape):
     print "\nNAO Robot will draw this shape: " + shape + "."
-    # Set NAO in Stiffness On
     stiffness_on(motionProxy)
 
     # Send NAO to Pose Init
