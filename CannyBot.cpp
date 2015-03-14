@@ -20,13 +20,6 @@
 const int rows = 4;
 const int columns = 4;
 
-// function headers
-static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
-double** transformationMatrix(std::string name, double** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta);
-double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, double** RElbowYaw, double** RElbowRoll, double** RWristRoll);
-void prettyPrint(std::string name, double** matrix);
-std::string roboShapeVision();
-
 // helper functions
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0){
 	double dx1 = pt1.x - pt0.x;
@@ -65,7 +58,7 @@ void prettyPrint(std::string name, double** matrix){
 
 // transformation matrix
 double** transformationMatrix(std::string name_of_matrix, double** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta) {
-	// perform transformation matrix stuff here
+
 	// theta is the only one changing. which is why a, alpha, and distance is of type const.
 	double temp = 0.00;
 	for (int i = 0; i < rows; i++)
@@ -243,9 +236,7 @@ double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, doubl
 	}
 	return product4;
 }
-// captures object very quickly...
-// need to make sure camera is already looking at workspace!
-//
+
 std::string roboShapeVision() {
 	std::cout << "Setting up NAO Robot camera!\n" << std::endl;
 	std::string shape = "";
@@ -270,7 +261,6 @@ std::string roboShapeVision() {
 	cv::waitKey(3000);
 
 	// breakout of loop when shape is found
-	/*while (cvWaitKey(30) != 'q') {*/
 	while (!breakout) {
 		// wait 1 seconds for robo camera to be ready
 		cv::waitKey(1000);
@@ -433,25 +423,11 @@ int main() {
 	// create matrices
 	// pass theta value per row to specified matrix for Right Arm of NAO Robot
 	RShoulderPitch = transformationMatrix("RShoulderPitch", RShoulderPitch, rows, columns, 0, -(PI / 2.0), 0, theta1);
-	prettyPrint("RShoulderPitch", RShoulderPitch);
-
 	RShoulderRoll = transformationMatrix("RShoulderRoll", RShoulderRoll, rows, columns, 0, (PI / 2.0), 0, theta2 + (PI / 2.0));
-        prettyPrint("RShoulderRoll", RShoulderRoll);
-        
 	RElbowYaw = transformationMatrix("RElbowYaw", RElbowYaw, rows, columns, -ELBOW_OFFSET_Y, (PI / 2.0), UPPER_ARM_LENGTH, theta3);
-        prettyPrint("RElbowYaw", RElbowYaw);
-
 	RElbowRoll = transformationMatrix("RElbowRoll", RElbowRoll, rows, columns, 0, -(PI / 2.0), 0, theta4);
-        prettyPrint("RElbowRoll", RElbowRoll);
-        
 	RWristRoll = transformationMatrix("RWristYRoll", RWristRoll, rows, columns, LOWER_ARM_LENGTH, (PI / 2.0), 0, theta5);
-        prettyPrint("RWristYRoll", RWristRoll);
-        
-	// mulitple matrices together for matrix
 	base_to_start = multiplyMatrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristRoll);
-	prettyPrint("base_to_start", base_to_start);
-
-	// pass shape value to somewhere
 
 	// program exit
 	std::cout << "\nend of program" << std::endl;

@@ -269,11 +269,7 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
 
     return m3
 
-if __name__ == '__main__':
-    print("\nWelcome to the CannyBot Program!\n")
-    shape = robo_vision()
-    print("The shape found on the workspace was a %d", shape[0])
-    
+def test_transformation_matrices():
     # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
     RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
@@ -307,6 +303,14 @@ if __name__ == '__main__':
     pretty_print("RWristRoll",RWristRoll)
     base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristRoll)
     pretty_print("base_to_start", base_to_start)
+
+if __name__ == '__main__':
+    print("\nWelcome to the CannyBot Program!\n")
+    shape = robo_vision()
+    print("The shape found on the workspace was a %d", shape[0])
+
+    # test transformation matrices
+    test_transformation_matrices()
 
     # make movement
     robo_motion(shape)
