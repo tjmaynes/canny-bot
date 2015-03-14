@@ -20,12 +20,13 @@
 const int rows = 4;
 const int columns = 4;
 
-// function headers
+/* function headers
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
 double** transformationMatrix(std::string name, double** matrix, int rows, int columns, const int a, const double alpha, const int distance, double theta);
 double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, double** RElbowYaw, double** RElbowRoll, double** RWristRoll);
 void prettyPrint(std::string name, double** matrix);
 std::string roboShapeVision();
+*/
 
 // helper functions
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0){
@@ -243,9 +244,7 @@ double** multiplyMatrices(double** RShoulderPitch, double** RShoulderRoll, doubl
 	}
 	return product4;
 }
-// captures object very quickly...
-// need to make sure camera is already looking at workspace!
-//
+
 std::string roboShapeVision() {
 	std::cout << "Setting up NAO Robot camera!\n" << std::endl;
 	std::string shape = "";
