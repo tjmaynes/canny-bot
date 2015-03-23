@@ -43,22 +43,6 @@ def pretty_print(name, matrix):
 
 """
 
-connect to NAO Robot on startup
-    
-"""
-try:
-    motionProxy = ALProxy("ALMotion", ip, port)
-except Exception, e:
-    print "Could not create proxy to ALMotion"
-    print "Error was: ", e
-try:
-    postureProxy = ALProxy("ALRobotPosture", ip, port)
-except Exception, e:
-    print "Could not create proxy to ALRobotPosture"
-    print "Error was: ", e
-
-"""
-
 main functions
     
 """
@@ -83,7 +67,7 @@ def robo_vision():
         connect_camera()
 
         # Get a camera image.
-        # image[6] contains the image data passed as an array of ASCII chars.
+        # naoImage[6] contains the image data passed as an array of ASCII chars.
         naoImage = camProxy.getImageRemote(video_client)
 
         # disconnect from camera
@@ -119,19 +103,29 @@ def robo_vision():
             approx = cv.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
             print len(approx)
             if len(approx)==5:
-                return ["pentagon", 0.0, [0.0,0.1,1.0]]
+                print "pentagon"
+                # robo_motion("pentagon")
+                #return ["pentagon", 0.0, [0.0,0.1,1.0]]
                 #cv.drawContours(img,[cnt],0,255,-1)
             elif len(approx)==3:
-                return ["triangle", 0.0, [0.0,0.1,1.0]]
+                print "triangle"
+                # robo_motion("triangle")
+                #return ["triangle", 0.0, [0.0,0.1,1.0]]
                 #cv.drawContours(img,[cnt],0,(0,255,0),-1)
             elif len(approx)==4:
-                return ["square", 0.0, [0.0,0.1,1.0]]
+                print "square"
+                # robo_motion("square")
+                #return ["square", 0.0, [0.0,0.1,1.0]]
                 #cv.drawContours(img,[cnt],0,(0,0,255),-1)
             elif len(approx) == 9:
-                return ["half-circle", 0.0, [0.0,0.1,1.0]]
+                print "half-circle"
+                # robo_motion("half-circle")
+                #return ["half-circle", 0.0, [0.0,0.1,1.0]]
                 #cv.drawContours(img,[cnt],0,(255,255,0),-1)
             elif len(approx) > 15:
-                return ["circle", 0.0, [0.0,0.1,1.0]]
+                print "circle"
+                # robo_motion("circle")
+                #return ["circle", 0.0, [0.0,0.1,1.0]]
                 #cv.drawContours(img,[cnt],0,(0,255,255),-1)
 
         c = cv.WaitKey(50)
@@ -146,7 +140,7 @@ def robo_motion(shape):
     postureProxy.goToPosture("StandInit", 0.5)
 
     effector   = "RArm"
-    space      = 2 #motion.FRAME_ROBOT
+    space      = motion.FRAME_TORSO
     axisMask   = almath.AXIS_MASK_VEL    # just control position
     isAbsolute = False
 
@@ -269,6 +263,7 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
 
     return m3
 
+# for debugging purposes
 def test_transformation_matrices():
     # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
@@ -306,14 +301,21 @@ def test_transformation_matrices():
 
 if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
-    shape = robo_vision()
-    print("The shape found on the workspace was a %d", shape[0])
 
-    # test transformation matrices
-    test_transformation_matrices()
+    # connect to NAO Robot on startup
+    try:
+        motionProxy = ALProxy("ALMotion", ip, port)
+    except Exception, e:
+        print "Could not create proxy to ALMotion"
+        print "Error was: ", e
+    try:
+        postureProxy = ALProxy("ALRobotPosture", ip, port)
+    except Exception, e:
+        print "Could not create proxy to ALRobotPosture"
+        print "Error was: ", e
 
-    # make movement
-    robo_motion(shape)
+    # have nao look at shapes!
+    robo_vision()
 
     # end of line
     print("End of Program.")
