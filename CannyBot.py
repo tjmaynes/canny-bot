@@ -73,7 +73,7 @@ def stiffness_on(proxy):
     
 def robo_vision():
   # leave area commented out for debugging purposes (uncomment for final demo).
-  """
+
   # First get an image from Nao, then show it on the screen with PIL.
   video_proxy = ALProxy("ALVideoDevice", ip, port)
 
@@ -84,7 +84,7 @@ def robo_vision():
   naoImage = video_proxy.getImageRemote(video_client)
   
   # disconect from video_proxy
-  video_proxy.unsubscribe(videoClient)
+  video_proxy.unsubscribe(video_client)
 
   # Get the image size and pixel array.
   imageWidth = naoImage[0]
@@ -96,7 +96,7 @@ def robo_vision():
 
   # Save the image.
   im.save("noognagnook.png")
-  """
+
   # use opencv to read from image
   frame = cv2.imread("noognagnook.png")
 
@@ -109,6 +109,15 @@ def robo_vision():
   # And do Canny edge detection
   canny = cv2.Canny(blur, 10, 100)
   
+  # debugging -- write canny to file
+  cv2.imwrite("NAOVISION.png", canny)
+
+  # debugging -- what does NAO see
+  #cv2.imshow("canny", canny)
+  
+  # press 0 to get out of image view
+  #cv2.waitKey(0)
+
   # contour detection
   contours,h = cv2.findContours(canny,1,2)
             
@@ -116,30 +125,22 @@ def robo_vision():
   for cnt in contours:
       approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
       if len(approx)==5:
-          print "pentagon"
-          # robo_motion("pentagon")
+          robo_motion("pentagon")
+          break
           #return ["pentagon", 0.0, [0.0,0.1,1.0]]
           #cv.drawContours(img,[cnt],0,255,-1)
       elif len(approx)==3:
-          print "triangle"
-          # robo_motion("triangle")
-          #return ["triangle", 0.0, [0.0,0.1,1.0]]
-          #cv.drawContours(img,[cnt],0,(0,255,0),-1)
+          robo_motion("triangle")
+          break
       elif len(approx)==4:
-          print "square"
-          # robo_motion("square")
-          #return ["square", 0.0, [0.0,0.1,1.0]]
-          #cv.drawContours(img,[cnt],0,(0,0,255),-1)
+          robo_motion("square")
+          break
       elif len(approx) == 9:
-          print "half-circle"
-          # robo_motion("half-circle")
-          #return ["half-circle", 0.0, [0.0,0.1,1.0]]
-          #cv.drawContours(img,[cnt],0,(255,255,0),-1)
+          robo_motion("half-circle")
+          break
       elif len(approx) > 15:
-          print "circle"
-          # robo_motion("circle")
-          #return ["circle", 0.0, [0.0,0.1,1.0]]
-          #cv.drawContours(img,[cnt],0,(0,255,255),-1)
+          robo_motion("circle")
+          break
 
   c = cv2.waitKey(50)
   if c == 27:
@@ -299,6 +300,9 @@ def test_transformation_matrices():
     f.close()
     print("Finished processing file.")
     print "Thetas are %d %d %d %d %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
+
+    # if else conditions bounded by certain degrees Prevent overheating
+
 
     # transformation matrices
     RShoulderPitch = transformation_matrix("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
