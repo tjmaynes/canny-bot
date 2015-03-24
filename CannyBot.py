@@ -2,10 +2,9 @@
 # Authors: Tommy Lin, TJ Maynes
 
 import os, sys, math, motion, almath
-from PIL import ImageChops
-import Image
-from numpy import *
-import cv2.cv as cv
+from StringIO import StringIO
+from PIL import Image
+import cv2
 from naoqi import ALProxy
 
 """
@@ -26,33 +25,44 @@ port = 9559
 eyes = None
 video_proxy = None
 video_client = None
-pilcolorspace = "RGB"
-resolution = 2
-colorSpace = 11
+pil_color_space = "RGB"
+resolution = 2   #VGA
+color_space = 11  #RGB
 fps = 30
 shape_name = ""
 start_pos = 0.0
 way_points = []
 shape = [shape_name, start_pos, way_points]
 
-
 def pretty_print(name, matrix):
     print "\nThis is matrix = " + name
     for row in matrix:
         print row
+"""
+Connect to NAO Robot on startup
+
+"""
+try:
+    motionProxy = ALProxy("ALMotion", ip, port)
+except Exception, e:
+    print "Could not create proxy to ALMotion"
+    print "Error was: ", e
+try:
+    postureProxy = ALProxy("ALRobotPosture", ip, port)
+except Exception, e:
+    print "Could not create proxy to ALRobotPosture"
+    print "Error was: ", e
+try:
+    voice = ALProxy("ALTextToSpeech", ip, port)
+except Exception, e:
+    print "Could not create proxy to ALTextToSpeech"
+    print "Error was: ", e
 
 """
 
 main functions
     
 """
-def connect_camera():
-    video_proxy = ALProxy("ALVideoDevice", ip, port)
-    video_client = video_proxy.subscribe("eyes", resolution, colorSpace, fps)
-        
-def disconnect_camera():
-    video_proxy.unsubscribe(video_client)    
-    video_proxy = None
 
 def stiffness_on(proxy):
     #We use the "Body" name to signify the collection of all joints
@@ -62,77 +72,82 @@ def stiffness_on(proxy):
     proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
     
 def robo_vision():
-    while True:
-        # connect to camera
-        connect_camera()
+  # leave area commented out for debugging purposes (uncomment for final demo).
+  """
+  # First get an image from Nao, then show it on the screen with PIL.
+  video_proxy = ALProxy("ALVideoDevice", ip, port)
 
-        # Get a camera image.
-        # naoImage[6] contains the image data passed as an array of ASCII chars.
-        naoImage = camProxy.getImageRemote(video_client)
+  video_client = video_proxy.subscribe("NAO_CAM", resolution, color_space, fps)
 
-        # disconnect from camera
-        disconnect_camera()
+  # Get a camera image.
+  # image[6] contains the image data passed as an array of ASCII chars.
+  naoImage = video_proxy.getImageRemote(video_client)
+  
+  # disconect from video_proxy
+  video_proxy.unsubscribe(videoClient)
 
-        # Now we work with the image returned and run
+  # Get the image size and pixel array.
+  imageWidth = naoImage[0]
+  imageHeight = naoImage[1]
+  buffer = naoImage[6]
 
-        # Get the image size and pixel array.
-        imageWidth = naoImage[0]
-        imageHeight = naoImage[1]
-        frame = naoImage[6]
+  # Create a PIL Image from our pixel array.
+  im = Image.fromstring(pil_color_space, (imageWidth, imageHeight), buffer)
 
-        # display image from Robot Camera
-        cv.ShowImage('RoboVision', frame)
+  # Save the image.
+  im.save("noognagnook.png")
+  """
+  # use opencv to read from image
+  frame = cv2.imread("noognagnook.png")
 
-        # Convert to greyscale
-        grey = cv.CreateImage(cv.GetSize(frame), frame.depth, 1)
-        cv.CvtColor(frame, grey, cv.CV_RGB2GRAY)
-
-        # Gaussian blur to remove noise
-        blur = cv.CreateImage(cv.GetSize(grey), cv.IPL_DEPTH_8U, grey.channels)
-        cv.Smooth(grey, blur, cv.CV_GAUSSIAN, 5, 5)
+  # Convert to greyscale
+  gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+  
+  # Gaussian blur to remove noise
+  blur = cv2.GaussianBlur(gray, (3,3), 0)
+  
+  # And do Canny edge detection
+  canny = cv2.Canny(blur, 10, 100)
+  
+  # contour detection
+  contours,h = cv2.findContours(canny,1,2)
             
-        # And do Canny edge detection
-        canny = cv.CreateImage(cv.GetSize(blur), blur.depth, blur.channels)
-        cv.Canny(blur, canny, 10, 100, 3)
-        cv.ShowImage('RoboVision', canny)
+  # only return value when you find a circle or square
+  for cnt in contours:
+      approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
+      if len(approx)==5:
+          print "pentagon"
+          # robo_motion("pentagon")
+          #return ["pentagon", 0.0, [0.0,0.1,1.0]]
+          #cv.drawContours(img,[cnt],0,255,-1)
+      elif len(approx)==3:
+          print "triangle"
+          # robo_motion("triangle")
+          #return ["triangle", 0.0, [0.0,0.1,1.0]]
+          #cv.drawContours(img,[cnt],0,(0,255,0),-1)
+      elif len(approx)==4:
+          print "square"
+          # robo_motion("square")
+          #return ["square", 0.0, [0.0,0.1,1.0]]
+          #cv.drawContours(img,[cnt],0,(0,0,255),-1)
+      elif len(approx) == 9:
+          print "half-circle"
+          # robo_motion("half-circle")
+          #return ["half-circle", 0.0, [0.0,0.1,1.0]]
+          #cv.drawContours(img,[cnt],0,(255,255,0),-1)
+      elif len(approx) > 15:
+          print "circle"
+          # robo_motion("circle")
+          #return ["circle", 0.0, [0.0,0.1,1.0]]
+          #cv.drawContours(img,[cnt],0,(0,255,255),-1)
 
-        contours,h = cv.findContours(canny,1,2)
-            
-        # only return value when you find a circle or square
-        for cnt in contours:
-            approx = cv.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
-            print len(approx)
-            if len(approx)==5:
-                print "pentagon"
-                # robo_motion("pentagon")
-                #return ["pentagon", 0.0, [0.0,0.1,1.0]]
-                #cv.drawContours(img,[cnt],0,255,-1)
-            elif len(approx)==3:
-                print "triangle"
-                # robo_motion("triangle")
-                #return ["triangle", 0.0, [0.0,0.1,1.0]]
-                #cv.drawContours(img,[cnt],0,(0,255,0),-1)
-            elif len(approx)==4:
-                print "square"
-                # robo_motion("square")
-                #return ["square", 0.0, [0.0,0.1,1.0]]
-                #cv.drawContours(img,[cnt],0,(0,0,255),-1)
-            elif len(approx) == 9:
-                print "half-circle"
-                # robo_motion("half-circle")
-                #return ["half-circle", 0.0, [0.0,0.1,1.0]]
-                #cv.drawContours(img,[cnt],0,(255,255,0),-1)
-            elif len(approx) > 15:
-                print "circle"
-                # robo_motion("circle")
-                #return ["circle", 0.0, [0.0,0.1,1.0]]
-                #cv.drawContours(img,[cnt],0,(0,255,255),-1)
-
-        c = cv.WaitKey(50)
-        if c == 27:
-            exit(0)
-                
+  c = cv2.waitKey(50)
+  if c == 27:
+      exit(0)
+      
 def robo_motion(shape):
+    voice.say("I will draw a " + shape);
+
     print "\nNAO Robot will draw this shape: " + shape + "."
     stiffness_on(motionProxy)
 
@@ -301,18 +316,6 @@ def test_transformation_matrices():
 
 if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
-
-    # connect to NAO Robot on startup
-    try:
-        motionProxy = ALProxy("ALMotion", ip, port)
-    except Exception, e:
-        print "Could not create proxy to ALMotion"
-        print "Error was: ", e
-    try:
-        postureProxy = ALProxy("ALRobotPosture", ip, port)
-    except Exception, e:
-        print "Could not create proxy to ALRobotPosture"
-        print "Error was: ", e
 
     # have nao look at shapes!
     robo_vision()
