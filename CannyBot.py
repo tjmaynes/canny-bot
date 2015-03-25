@@ -299,81 +299,52 @@ def test_transformation_matrices():
     theta4 = f.readline()
     f.close()
     print("Finished processing file.")
-    print "Thetas are %d %d %d %d %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
+    print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
     # if else conditions bounded by certain degrees Prevent overheating
-    if(theta0 > 0)
-    {
-        if(theta0 > 119.5)
-        {
-            theta0 = 118
-        }
-    }
-    if(theta0 < 0)
-    {
-        if(theta0 < -119.5)
-        {
-            theta0 = -118
-        }
-    }
-
-    if(theta1 > 0)
-    {
-        if(theta1 > 18)
-        {
-            theta1 = 17
-        }
-    }
-    if(theta < 0)
-    {
-        if(theta1 < -76)
-        {
-            theta1 = -74
-        }
-    }
-
-    if(theta2 > 0)
-    {
-        if(theta2 > 119.5)
-        {
-            theta2 = 118
-        }
-    }
-    if(theta2 < 0)
-    {
-        if(theta2 < -119.5)
-        {
-            theta2 = -118
-        }
-    }
-
-    if(theta3 > 2)
-    {
-        if(theta3 > 88.5)
-        {
-            theta3 = 87
-        }
-    }
-    if(theta3 < 2)
-    {
-        theta3 = 3
-    }
-
-      if(theta4 > 0)
-    {
-        if(theta4 > 104.5)
-        {
-            theta4 = 102
-        }
-    }
-    if(theta4 < 0)
-    {
-        if(theta4 < -104.5)
-        {
-            theta4 = -102
-        }
-    }
+    if float(theta0) > 0 and float(theta0) >= 119.5:
+        print "\nthis theta ", theta0, " is wrong."
+        theta0 = 110
+        print "\nthis theta ", theta0, " is now correct."
+    elif float(theta0) < 0.0 and float(theta0) < -119.5:
+            print "\nthis theta ", theta0, " is wrong."
+            theta0 = -110
+            print "\nthis theta ", theta0, " is now correct."
+    if float(theta1) > 0.0 and float(theta1) > 18.0:
+            print "\nthis theta ", theta1, " is wrong."
+            theta1 = 15
+            print "\nthis theta ", theta1, " is now correct."
+    elif float(theta1) < 0.0 and float(theta1) < -76:
+            print "\nthis theta ", theta1, " is wrong."
+            theta1 = -70
+            print "\nthis theta ", theta1, " is now correct."
+    if float(theta2) > 0.0 and float(theta2) > 119.5:
+            print "\nthis theta ", theta2, " is wrong."
+            theta2 = 110
+            print "\nthis theta ", theta2, " is now correct."
+    elif float(theta2) < 0.0 and float(theta2) < -119.5:
+            print "\nthis theta ", theta2, " is wrong."
+            theta2 = -110
+            print "\nthis theta ", theta2, " is now correct."
+    if float(theta3) > 2 and float(theta3) > 88.5:
+            print "\nthis theta ", theta3, " is wrong."
+            theta3 = 80
+            print "\nthis theta ", theta3, " is now correct."
+    elif float(theta3) < 2:
+        print "\nthis theta ", theta3, " is wrong."
+        theta3 = 5
+        print "\nthis theta ", theta3, " is now correct."
+    if float(theta4) > 0 and float(theta4) > 104.5:
+            print "\nthis theta ", theta4, " is wrong."
+            theta4 = 100
+            print "\nthis theta ", theta4, " is now correct."
+    elif float(theta4) < 0 and float(theta4) < -104.5:
+            print "\nthis theta ", theta4, " is wrong."
+            theta4 = -100
+            print "\nthis theta ", theta4, " is now correct."
     
+    print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
+
     # transformation matrices
     RShoulderPitch = transformation_matrix("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
     pretty_print("RShoulderPitch", RShoulderPitch)
@@ -393,6 +364,9 @@ if __name__ == '__main__':
 
     # have nao look at shapes!
     robo_vision()
+
+    # debugging
+    test_transformation_matrices()
 
     # end of line
     print("End of Program.")
