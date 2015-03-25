@@ -302,8 +302,78 @@ def test_transformation_matrices():
     print "Thetas are %d %d %d %d %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
     # if else conditions bounded by certain degrees Prevent overheating
+    if(theta0 > 0)
+    {
+        if(theta0 > 119.5)
+        {
+            theta0 = 118
+        }
+    }
+    if(theta0 < 0)
+    {
+        if(theta0 < -119.5)
+        {
+            theta0 = -118
+        }
+    }
 
+    if(theta1 > 0)
+    {
+        if(theta1 > 18)
+        {
+            theta1 = 17
+        }
+    }
+    if(theta < 0)
+    {
+        if(theta1 < -76)
+        {
+            theta1 = -74
+        }
+    }
 
+    if(theta2 > 0)
+    {
+        if(theta2 > 119.5)
+        {
+            theta2 = 118
+        }
+    }
+    if(theta2 < 0)
+    {
+        if(theta2 < -119.5)
+        {
+            theta2 = -118
+        }
+    }
+
+    if(theta3 > 2)
+    {
+        if(theta3 > 88.5)
+        {
+            theta3 = 87
+        }
+    }
+    if(theta3 < 2)
+    {
+        theta3 = 3
+    }
+
+      if(theta4 > 0)
+    {
+        if(theta4 > 104.5)
+        {
+            theta4 = 102
+        }
+    }
+    if(theta4 < 0)
+    {
+        if(theta4 < -104.5)
+        {
+            theta4 = -102
+        }
+    }
+    
     # transformation matrices
     RShoulderPitch = transformation_matrix("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
     pretty_print("RShoulderPitch", RShoulderPitch)
