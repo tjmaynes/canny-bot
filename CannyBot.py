@@ -55,11 +55,9 @@ except Exception, e:
     print "Error was: ", e
 
 """
+main functions   
 
-main functions
-    
 """
-
 def stiffness_on(proxy):
     #We use the "Body" name to signify the collection of all joints
     pNames = "Body"
@@ -308,43 +306,43 @@ def test_transformation_matrices():
     print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
     # if else conditions bounded by certain degrees Prevent overheating
-    if float(theta0) > 0 and float(theta0) >= 119.5:
+    if float(theta0) >= 119.5:
         print "\nthis theta ", theta0, " is wrong."
         theta0 = 110
         print "\nthis theta ", theta0, " is now correct."
-    elif float(theta0) < 0.0 and float(theta0) < -119.5:
+    elif float(theta0) <= -119.5:
             print "\nthis theta ", theta0, " is wrong."
             theta0 = -110
             print "\nthis theta ", theta0, " is now correct."
-    if float(theta1) > 0.0 and float(theta1) > 18.0:
+    if float(theta1) > 18.0:
             print "\nthis theta ", theta1, " is wrong."
             theta1 = 15
             print "\nthis theta ", theta1, " is now correct."
-    elif float(theta1) < 0.0 and float(theta1) < -76:
+    elif float(theta1) < -76:
             print "\nthis theta ", theta1, " is wrong."
             theta1 = -70
             print "\nthis theta ", theta1, " is now correct."
-    if float(theta2) > 0.0 and float(theta2) > 119.5:
+    if float(theta2) >= 119.5:
             print "\nthis theta ", theta2, " is wrong."
             theta2 = 110
             print "\nthis theta ", theta2, " is now correct."
-    elif float(theta2) < 0.0 and float(theta2) < -119.5:
+    elif float(theta2) <= -119.5:
             print "\nthis theta ", theta2, " is wrong."
             theta2 = -110
             print "\nthis theta ", theta2, " is now correct."
-    if float(theta3) > 2 and float(theta3) > 88.5:
+    if float(theta3) >= 88.5:
             print "\nthis theta ", theta3, " is wrong."
             theta3 = 80
             print "\nthis theta ", theta3, " is now correct."
-    elif float(theta3) < 2:
+    elif float(theta3) <= 2:
         print "\nthis theta ", theta3, " is wrong."
         theta3 = 5
         print "\nthis theta ", theta3, " is now correct."
-    if float(theta4) > 0 and float(theta4) > 104.5:
+    if float(theta4) >= 104.5:
             print "\nthis theta ", theta4, " is wrong."
             theta4 = 100
             print "\nthis theta ", theta4, " is now correct."
-    elif float(theta4) < 0 and float(theta4) < -104.5:
+    elif float(theta4) <= -104.5:
             print "\nthis theta ", theta4, " is wrong."
             theta4 = -100
             print "\nthis theta ", theta4, " is now correct."
@@ -369,7 +367,7 @@ if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
 
     # have nao look at shapes!
-    robo_vision()
+    #robo_vision()
 
     """
     while (true):
