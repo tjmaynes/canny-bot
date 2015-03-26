@@ -29,10 +29,6 @@ pil_color_space = "RGB"
 resolution = 2   #VGA
 color_space = 11  #RGB
 fps = 30
-shape_name = ""
-start_pos = 0.0
-way_points = []
-shape = [shape_name, start_pos, way_points]
 
 def pretty_print(name, matrix):
     print "\nThis is matrix = " + name
@@ -113,10 +109,10 @@ def robo_vision():
   cv2.imwrite("NAOVISION.png", canny)
 
   # debugging -- what does NAO see
-  #cv2.imshow("canny", canny)
+  cv2.imshow("canny", canny)
   
   # press 0 to get out of image view
-  #cv2.waitKey(0)
+  cv2.waitKey(0)
 
   # contour detection
   contours,h = cv2.findContours(canny,1,2)
@@ -124,6 +120,9 @@ def robo_vision():
   # only return value when you find a circle or square
   for cnt in contours:
       approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
+      if len(approx)==2:
+          robo_motion("line")
+          break
       if len(approx)==5:
           robo_motion("pentagon")
           break
@@ -150,7 +149,14 @@ def robo_motion(shape):
     voice.say("I will draw a " + shape);
 
     print "\nNAO Robot will draw this shape: " + shape + "."
+
+    """
     stiffness_on(motionProxy)
+
+    shape_name = ""
+    start_pos = 0.0
+    way_points = []
+    shape = [shape_name, start_pos, way_points]
 
     # Send NAO to Pose Init
     postureProxy.goToPosture("StandInit", 0.5)
@@ -178,7 +184,7 @@ def robo_motion(shape):
 
     motionProxy.positionInterpolation(effector, space, path,
                                       axisMask, times, isAbsolute)
-
+    """
 def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
     temp = 0.0
     for i in range(rows):
@@ -364,6 +370,16 @@ if __name__ == '__main__':
 
     # have nao look at shapes!
     robo_vision()
+
+    """
+    while (true):
+      print "Would you like to run this program again?"
+      # input
+      if input == "n" or input == "no":
+         break;
+    2  else:
+         robo_vision()
+    """
 
     # debugging
     test_transformation_matrices()
