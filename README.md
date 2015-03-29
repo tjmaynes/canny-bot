@@ -3,10 +3,15 @@ getting a robot to draw the shapes it "sees" using image processing
 
 Currently only works with Windows (still testing on OSX)!
 
-To run just type,
+To run just enter into terminal,
 * python CannyBot.py
 
-## Python Setup
+Dependencies:
+* Python 2.7.8
+* NAO Python SDK
+* OpenCV 2.3.1 (only version that currently runs on NAO)
+
+## OpenCV Setup
 
 On Windows:
 * http://docs.opencv.org/trunk/doc/py_tutorials/py_setup/py_setup_in_windows/py_setup_in_windows.html
