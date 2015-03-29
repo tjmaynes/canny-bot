@@ -103,6 +103,8 @@ def robo_vision():
   # And do Canny edge detection
   canny = cv2.Canny(blur, 10, 100)
   
+  """
+  # uncomment area to see what the NAO "sees"
   # debugging -- write canny to file
   cv2.imwrite("NAOVISION.png", canny)
 
@@ -111,6 +113,7 @@ def robo_vision():
   
   # press 0 to get out of image view
   cv2.waitKey(0)
+  """
 
   # contour detection
   contours,h = cv2.findContours(canny,1,2)
@@ -366,21 +369,19 @@ def test_transformation_matrices():
 if __name__ == '__main__':
     print("\nWelcome to the CannyBot Program!\n")
 
-    # have nao look at shapes!
-    #robo_vision()
-
-    """
     while (true):
-      print "Would you like to run this program again?"
-      # input
-      if input == "n" or input == "no":
-         break;
-    2  else:
-         robo_vision()
-    """
+        # have nao look at shapes!
+        robo_vision()
 
-    # debugging
-    test_transformation_matrices()
+        # debugging
+        #test_transformation_matrices()
+
+        # run again?
+        input = raw_input("\nWould you like to run this program again?")
+        if input == "n" or input == "no" or input == "0":
+            break;
+        else:
+            robo_vision()
 
     # end of line
     print("End of Program.")
