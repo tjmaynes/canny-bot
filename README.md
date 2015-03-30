@@ -1,6 +1,9 @@
 # CannyBot
 getting a robot to draw the shapes it "sees" using image processing
 
+![screenshot](/debug/NAOVISION.png)
+
+
 Currently only works with Windows (still testing on OSX)!
 
 To run just enter into terminal,
