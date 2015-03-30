@@ -66,8 +66,6 @@ def stiffness_on(proxy):
     proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
     
 def robo_vision():
-  # leave area commented out for debugging purposes (uncomment for final demo).
-
   # First get an image from Nao, then show it on the screen with PIL.
   video_proxy = ALProxy("ALVideoDevice", ip, port)
 
