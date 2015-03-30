@@ -89,10 +89,10 @@ def robo_vision():
   im = Image.fromstring(pil_color_space, (imageWidth, imageHeight), buffer)
 
   # Save the image.
-  im.save("noognagnook.png")
+  im.save("debug/noognagnook.png")
 
   # use opencv to read from image
-  frame = cv2.imread("noognagnook.png")
+  frame = cv2.imread("debug/noognagnook.png")
 
   # Convert to greyscale
   gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -106,7 +106,7 @@ def robo_vision():
   """
   # uncomment area to see what the NAO "sees"
   # debugging -- write canny to file
-  cv2.imwrite("NAOVISION.png", canny)
+  cv2.imwrite("debug/NAOVISION.png", canny)
 
   # debugging -- what does NAO see
   cv2.imshow("canny", canny)
