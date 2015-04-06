@@ -10,7 +10,6 @@ from naoqi import ALProxy
 """
 
 helper functions and values
-
 """
 
 rows = 4
@@ -31,35 +30,38 @@ color_space = 11  #RGB
 fps = 30
 
 def pretty_print(name, matrix):
-    print "\nThis is matrix = " + name
+  print "\nThis is matrix = " + name
     for row in matrix:
-        print row
+      print row
+
 """
+
 Connect to NAO Robot on startup
+"""
+
+try:
+  motionProxy = ALProxy("ALMotion", ip, port)
+except Exception, e:
+  print "Could not create proxy to ALMotion"
+    print "Error was: ", e
+try:
+  postureProxy = ALProxy("ALRobotPosture", ip, port)
+except Exception, e:
+  print "Could not create proxy to ALRobotPosture"
+    print "Error was: ", e
+try:
+  voice = ALProxy("ALTextToSpeech", ip, port)
+except Exception, e:
+  print "Could not create proxy to ALTextToSpeech"
+    print "Error was: ", e
 
 """
-try:
-    motionProxy = ALProxy("ALMotion", ip, port)
-except Exception, e:
-    print "Could not create proxy to ALMotion"
-    print "Error was: ", e
-try:
-    postureProxy = ALProxy("ALRobotPosture", ip, port)
-except Exception, e:
-    print "Could not create proxy to ALRobotPosture"
-    print "Error was: ", e
-try:
-    voice = ALProxy("ALTextToSpeech", ip, port)
-except Exception, e:
-    print "Could not create proxy to ALTextToSpeech"
-    print "Error was: ", e
 
-"""
 main functions
-
 """
+
 def stiffness_on(proxy):
-    #We use the "Body" name to signify the collection of all joints
+  #We use the "Body" name to signify the collection of all joints
     pNames = "Body"
     pStiffnessLists = 1.0
     pTimeLists = 1.0
@@ -118,34 +120,34 @@ def robo_vision():
 
   # only return value when you find a circle or square
   for cnt in contours:
-      approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
+    approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
       if len(approx)==2:
-          robo_motion("line")
+        robo_motion("line")
           break
       if len(approx)==5:
-          robo_motion("pentagon")
+        robo_motion("pentagon")
           break
-          #return ["pentagon", 0.0, [0.0,0.1,1.0]]
+        #return ["pentagon", 0.0, [0.0,0.1,1.0]]
           #cv.drawContours(img,[cnt],0,255,-1)
       elif len(approx)==3:
-          robo_motion("triangle")
+        robo_motion("triangle")
           break
       elif len(approx)==4:
-          robo_motion("square")
+        robo_motion("square")
           break
       elif len(approx) == 9:
-          robo_motion("half-circle")
+        robo_motion("half-circle")
           break
       elif len(approx) > 15:
-          robo_motion("circle")
+        robo_motion("circle")
           break
 
   c = cv2.waitKey(50)
   if c == 27:
-      exit(0)
+    exit(0)
 
 def robo_motion(shape):
-    voice.say("I will draw a " + shape);
+  voice.say("I will draw a " + shape);
 
     print "\nNAO Robot will draw this shape: " + shape + "."
 
@@ -167,128 +169,127 @@ def robo_motion(shape):
    if shape == "line"
      shape = ["line",
 
-    # Since we are in relative, the current position is zero
-    currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+         # Since we are in relative, the current position is zero
+         currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-    # Define the changes relative to the current position
-    dx         =  0.06      # translation axis X (meters)
-    dy         =  0.03      # translation axis Y (meters)
-    dz         =  0.00      # translation axis Z (meters)
-    dwx        =  0.00      # rotation axis X (radians)
-    dwy        =  0.00      # rotation axis Y (radians)
-    dwz        =  0.00      # rotation axis Z (radians)
-    targetPos  = [dx, dy, dz, dwx, dwy, dwz]
+         # Define the changes relative to the current position
+         dx         =  0.06      # translation axis X (meters)
+         dy         =  0.03      # translation axis Y (meters)
+         dz         =  0.00      # translation axis Z (meters)
+         dwx        =  0.00      # rotation axis X (radians)
+         dwy        =  0.00      # rotation axis Y (radians)
+         dwz        =  0.00      # rotation axis Z (radians)
+         targetPos  = [dx, dy, dz, dwx, dwy, dwz]
 
-    # Go to the target and back again
-    path       = [targetPos, currentPos]
-    times      = [2.0, 10.0] # seconds
+         # Go to the target and back again
+         path       = [targetPos, currentPos]
+         times      = [2.0, 10.0] # seconds
 
-    motionProxy.positionInterpolation(effector, space, path,
-                                      axisMask, times, isAbsolute)
+         motionProxy.positionInterpolation(effector, space, path,
+           axisMask, times, isAbsolute)
 
-def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
-    temp = 0.0
-    for i in range(rows):
-        for j in range(columns):
-            if i == 0 and j == 0:
-                temp = math.cos(theta*math.pi/180.0)
+         def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
+         temp = 0.0
+         for i in range(rows):
+         for j in range(columns):
+         if i == 0 and j == 0:
+         temp = math.cos(theta*math.pi/180.0)
+         if temp == -0:
+         temp = 0.0
+         matrix[i][j] = round(temp)
+         if i == 0 and j == 1:
+         temp = (-(math.sin(theta*math.pi/180.0))*math.cos(alpha*math.pi/180.0))
+         if temp == -0:
+         temp = 0.0
+         matrix[i][j] = round(temp)
+         if i == 0 and j == 2:
+         temp = (math.sin(theta*math.pi/ 180.0) * math.sin(alpha*math.pi/ 180.0))
+         if temp == -0:
+         temp = 0.0
+         matrix[i][j] = round(temp)
+         if i == 0 and j == 3:
+         temp = (a * math.cos(theta*math.pi/180.0))
+         if temp == -0:
+         temp = 0.0
+         matrix[i][j] = round(temp)
+         if i == 1 and j == 0:
+         temp = math.sin(theta*math.pi/180.0)
+         if temp == -0:
+         temp = 0.0
+         matrix[i][j] = round(temp)
+         if i == 1 and j == 1:
+       temp = (math.cos(theta*math.pi/180.0)*math.cos(alpha*math.pi/180.0))
                 if temp == -0:
-                    temp = 0.0
-                matrix[i][j] = round(temp)
-            if i == 0 and j == 1:
-                temp = (-(math.sin(theta*math.pi/180.0))*math.cos(alpha*math.pi/180.0))
-                if temp == -0:
-                    temp = 0.0
-                matrix[i][j] = round(temp)
-            if i == 0 and j == 2:
-                temp = (math.sin(theta*math.pi/ 180.0) * math.sin(alpha*math.pi/ 180.0))
-                if temp == -0:
-                    temp = 0.0
-                matrix[i][j] = round(temp)
-            if i == 0 and j == 3:
-                temp = (a * math.cos(theta*math.pi/180.0))
-                if temp == -0:
-                    temp = 0.0
-                matrix[i][j] = round(temp)
-            if i == 1 and j == 0:
-                temp = math.sin(theta*math.pi/180.0)
-                if temp == -0:
-                    temp = 0.0
-                matrix[i][j] = round(temp)
-            if i == 1 and j == 1:
-                temp = (math.cos(theta*math.pi/180.0)*math.cos(alpha*math.pi/180.0))
-                if temp == -0:
-                    temp = 0.0
+                  temp = 0.0
                 matrix[i][j] = round(temp)
             if i == 1 and j == 2:
-                temp = (-(math.cos(theta*math.pi/180.0))*math.sin(alpha*math.pi/180.0))
+              temp = (-(math.cos(theta*math.pi/180.0))*math.sin(alpha*math.pi/180.0))
                 if temp == -0:
-                    temp = 0.0
+                  temp = 0.0
                 matrix[i][j] = round(temp)
             if i == 1 and j == 3:
-                temp = a*math.sin(theta*math.pi/180.0)
+              temp = a*math.sin(theta*math.pi/180.0)
                 if temp == -0:
-                    temp = 0.0
+                  temp = 0.0
                 matrix[i][j] = round(temp)
             if i == 2 and j == 0:
-                matrix[i][j] = 0.0
+              matrix[i][j] = 0.0
             if i == 2 and j == 1:
-                temp = math.sin(alpha * math.pi/180.0)
+              temp = math.sin(alpha * math.pi/180.0)
                 if temp == -0:
-                    temp = 0.0
+                  temp = 0.0
                 matrix[i][j] = round(temp)
             if i == 2 and j == 2:
-                temp = math.cos(alpha * math.pi/180.0)
+              temp = math.cos(alpha * math.pi/180.0)
                 if temp == -0:
-                    temp = 0.0
+                  temp = 0.0
                 matrix[i][j] = round(temp)
             if i == 2 and j == 3:
-                temp = distance
+              temp = distance
                 if temp == -0:
-                    temp = 0.0
+                  temp = 0.0
                 matrix[i][j] = round(temp)
             if i == 3 and j == 0:
-                matrix[i][j] = 0.0
+              matrix[i][j] = 0.0
             if i == 3 and j == 1:
-                matrix[i][j] = 0.0
+              matrix[i][j] = 0.0
             if i == 3 and j == 2:
-                matrix[i][j] = 0.0
+              matrix[i][j] = 0.0
             if i == 3 and j == 3:
-                matrix[i][j] = 1.0
+              matrix[i][j] = 1.0
     return matrix
 
 def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristRoll):
-    # initialize temp matrices
+  # initialize temp matrices
     m0 = [[0 for x in range(4)] for x in range(4)]
     m1 = [[0 for x in range(4)] for x in range(4)]
     m2 = [[0 for x in range(4)] for x in range(4)]
     m3 = [[0 for x in range(4)] for x in range(4)]
 
     for i in range(rows):
-        for j in range(columns):
-            for inner in range(4):
-                m0[i][j] = round(m0[i][j]+RShoulderPitch[i][inner]*RShoulderRoll[inner][j])
+      for j in range(columns):
+        for inner in range(4):
+          m0[i][j] = round(m0[i][j]+RShoulderPitch[i][inner]*RShoulderRoll[inner][j])
 
     for i in range(rows):
-        for j in range(columns):
-            for inner in range(4):
-                m1[i][j] = round(m1[i][j]+m0[i][inner]*RElbowYaw[inner][j])
+      for j in range(columns):
+        for inner in range(4):
+          m1[i][j] = round(m1[i][j]+m0[i][inner]*RElbowYaw[inner][j])
 
     for i in range(rows):
-        for j in range(columns):
-            for inner in range(4):
-                m2[i][j] = round(m2[i][j]+m1[i][inner]*RElbowRoll[inner][j])
+      for j in range(columns):
+        for inner in range(4):
+          m2[i][j] = round(m2[i][j]+m1[i][inner]*RElbowRoll[inner][j])
 
     for i in range(rows):
-        for j in range(columns):
-            for inner in range(4):
-                m3[i][j] = round(m3[i][j]+m2[i][inner]*RWristRoll[inner][j])
-
+      for j in range(columns):
+        for inner in range(4):
+          m3[i][j] = round(m3[i][j]+m2[i][inner]*RWristRoll[inner][j])
     return m3
 
 # for debugging purposes
 def test_transformation_matrices():
-    # initialize matrices
+  # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
     RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
     RElbowYaw = [[0 for x in range(4)] for x in range(4)]
@@ -305,50 +306,31 @@ def test_transformation_matrices():
     theta3 = f.readline()
     theta4 = f.readline()
     f.close()
-    print("Finished processing file.")
+    print "Finished processing file."
+
+    # bounds checking (to prevent overheating)
     print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
-    # if else conditions bounded by certain degrees Prevent overheating
     if float(theta0) >= 119.5:
-        print "\nthis theta ", theta0, " is wrong."
-        theta0 = 110
-        print "\nthis theta ", theta0, " is now correct."
+      theta0 = 110
     elif float(theta0) <= -119.5:
-            print "\nthis theta ", theta0, " is wrong."
-            theta0 = -110
-            print "\nthis theta ", theta0, " is now correct."
+      theta0 = -110
     if float(theta1) > 18.0:
-            print "\nthis theta ", theta1, " is wrong."
-            theta1 = 15
-            print "\nthis theta ", theta1, " is now correct."
+      theta1 = 15
     elif float(theta1) < -76:
-            print "\nthis theta ", theta1, " is wrong."
-            theta1 = -70
-            print "\nthis theta ", theta1, " is now correct."
+      theta1 = -70
     if float(theta2) >= 119.5:
-            print "\nthis theta ", theta2, " is wrong."
-            theta2 = 110
-            print "\nthis theta ", theta2, " is now correct."
+      theta2 = 110
     elif float(theta2) <= -119.5:
-            print "\nthis theta ", theta2, " is wrong."
-            theta2 = -110
-            print "\nthis theta ", theta2, " is now correct."
+      theta2 = -110
     if float(theta3) >= 88.5:
-            print "\nthis theta ", theta3, " is wrong."
-            theta3 = 80
-            print "\nthis theta ", theta3, " is now correct."
+      theta3 = 80
     elif float(theta3) <= 2:
-        print "\nthis theta ", theta3, " is wrong."
-        theta3 = 5
-        print "\nthis theta ", theta3, " is now correct."
+      theta3 = 5
     if float(theta4) >= 104.5:
-            print "\nthis theta ", theta4, " is wrong."
-            theta4 = 100
-            print "\nthis theta ", theta4, " is now correct."
+      theta4 = 100
     elif float(theta4) <= -104.5:
-            print "\nthis theta ", theta4, " is wrong."
-            theta4 = -100
-            print "\nthis theta ", theta4, " is now correct."
+      theta4 = -100
 
     print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
@@ -367,21 +349,21 @@ def test_transformation_matrices():
     pretty_print("base_to_start", base_to_start)
 
 if __name__ == '__main__':
-    print("\nWelcome to the CannyBot Program!\n")
+  print("\nWelcome to the CannyBot Program!\n")
 
     while (true):
-        # have nao look at shapes!
+      # have nao look at shapes!
+      robo_vision()
+
+      # debugging
+      #test_transformation_matrices()
+
+      # run again?
+      input = raw_input("\nWould you like to run this program again?")
+      if input == "n" or input == "no" or input == "0":
+        break
+      else:
         robo_vision()
-
-        # debugging
-        #test_transformation_matrices()
-
-        # run again?
-        input = raw_input("\nWould you like to run this program again?")
-        if input == "n" or input == "no" or input == "0":
-            break;
-        else:
-            robo_vision()
 
     # end of line
     print("End of Program.")
