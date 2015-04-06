@@ -156,7 +156,7 @@ def create_grid(start):
 
   # traverse through matrix and add theta values based on measurements of space in "invisible" grid
   for i in range(rows):
-    for j in range(columns:
+    for j in range(columns):
       if i == 0 and j == 0:
         grid[i][j] = start
       elif i == 0 and j == 1:
