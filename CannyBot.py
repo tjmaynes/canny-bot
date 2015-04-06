@@ -10,7 +10,6 @@ from naoqi import ALProxy
 """
 
 helper functions and values
-
 """
 
 rows = 4
@@ -34,10 +33,12 @@ def pretty_print(name, matrix):
     print "\nThis is matrix = " + name
     for row in matrix:
         print row
-"""
-Connect to NAO Robot on startup
 
 """
+
+Connect to NAO Robot on startup
+"""
+
 try:
     motionProxy = ALProxy("ALMotion", ip, port)
 except Exception, e:
@@ -55,9 +56,10 @@ except Exception, e:
     print "Error was: ", e
 
 """
-main functions   
 
+main functions
 """
+
 def stiffness_on(proxy):
     #We use the "Body" name to signify the collection of all joints
     pNames = "Body"
@@ -149,7 +151,6 @@ def robo_motion(shape):
 
     print "\nNAO Robot will draw this shape: " + shape + "."
 
-    """
     stiffness_on(motionProxy)
 
     shape_name = ""
@@ -183,7 +184,7 @@ def robo_motion(shape):
 
     motionProxy.positionInterpolation(effector, space, path,
                                       axisMask, times, isAbsolute)
-    """
+
 def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
     temp = 0.0
     for i in range(rows):
@@ -377,7 +378,7 @@ if __name__ == '__main__':
         # run again?
         input = raw_input("\nWould you like to run this program again?")
         if input == "n" or input == "no" or input == "0":
-            break;
+            break
         else:
             robo_vision()
 
