@@ -55,7 +55,7 @@ except Exception, e:
     print "Error was: ", e
 
 """
-main functions   
+main functions
 
 """
 def stiffness_on(proxy):
@@ -64,7 +64,7 @@ def stiffness_on(proxy):
     pStiffnessLists = 1.0
     pTimeLists = 1.0
     proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
-    
+
 def robo_vision():
   # First get an image from Nao, then show it on the screen with PIL.
   video_proxy = ALProxy("ALVideoDevice", ip, port)
@@ -74,7 +74,7 @@ def robo_vision():
   # Get a camera image.
   # image[6] contains the image data passed as an array of ASCII chars.
   naoImage = video_proxy.getImageRemote(video_client)
-  
+
   # disconect from video_proxy
   video_proxy.unsubscribe(video_client)
 
@@ -94,13 +94,13 @@ def robo_vision():
 
   # Convert to greyscale
   gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-  
+
   # Gaussian blur to remove noise
   blur = cv2.GaussianBlur(gray, (3,3), 0)
-  
+
   # And do Canny edge detection
   canny = cv2.Canny(blur, 10, 100)
-  
+
   """
   # uncomment area to see what the NAO "sees"
   # debugging -- write canny to file
@@ -108,14 +108,14 @@ def robo_vision():
 
   # debugging -- what does NAO see
   cv2.imshow("canny", canny)
-  
+
   # press 0 to get out of image view
   cv2.waitKey(0)
   """
 
   # contour detection
   contours,h = cv2.findContours(canny,1,2)
-            
+
   # only return value when you find a circle or square
   for cnt in contours:
       approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
@@ -143,13 +143,12 @@ def robo_vision():
   c = cv2.waitKey(50)
   if c == 27:
       exit(0)
-      
+
 def robo_motion(shape):
     voice.say("I will draw a " + shape);
 
     print "\nNAO Robot will draw this shape: " + shape + "."
 
-    """
     stiffness_on(motionProxy)
 
     shape_name = ""
@@ -165,9 +164,12 @@ def robo_motion(shape):
     axisMask   = almath.AXIS_MASK_VEL    # just control position
     isAbsolute = False
 
+   if shape == "line"
+     shape = ["line",
+
     # Since we are in relative, the current position is zero
     currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    
+
     # Define the changes relative to the current position
     dx         =  0.06      # translation axis X (meters)
     dy         =  0.03      # translation axis Y (meters)
@@ -183,7 +185,7 @@ def robo_motion(shape):
 
     motionProxy.positionInterpolation(effector, space, path,
                                       axisMask, times, isAbsolute)
-    """
+
 def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
     temp = 0.0
     for i in range(rows):
@@ -347,7 +349,7 @@ def test_transformation_matrices():
             print "\nthis theta ", theta4, " is wrong."
             theta4 = -100
             print "\nthis theta ", theta4, " is now correct."
-    
+
     print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
     # transformation matrices
