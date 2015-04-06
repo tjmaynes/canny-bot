@@ -12,13 +12,18 @@ from naoqi import ALProxy
 helper functions and values
 """
 
+# defaults
 rows = 4
 columns = 4
+
+# nao right arm defaults
 ELBOW_OFFSET_Y = 15
 UPPER_ARM_LENGTH = 105
+LOWER_ARM_LENGTH = 55.95
 SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
-LOWER_ARM_LENGTH = 55.95
+
+# nao settings
 ip = "169.254.226.148"
 port = 9559
 eyes = None
@@ -123,102 +128,98 @@ def robo_vision():
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
       if len(approx)==2:
         robo_motion("line")
-          break
+        break
       if len(approx)==5:
         robo_motion("pentagon")
-          break
-        #return ["pentagon", 0.0, [0.0,0.1,1.0]]
-          #cv.drawContours(img,[cnt],0,255,-1)
+        break
       elif len(approx)==3:
         robo_motion("triangle")
-          break
+        break
       elif len(approx)==4:
         robo_motion("square")
-          break
+        break
       elif len(approx) == 9:
         robo_motion("half-circle")
-          break
+        break
       elif len(approx) > 15:
         robo_motion("circle")
-          break
+        break
 
   c = cv2.waitKey(50)
   if c == 27:
     exit(0)
 
-def robo_motion(shape):
+def robo_motion(shape_name):
   voice.say("I will draw a " + shape);
 
     print "\nNAO Robot will draw this shape: " + shape + "."
 
-    stiffness_on(motionProxy)
+    # initialize matrices
+    RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
+    RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
+    RElbowYaw = [[0 for x in range(4)] for x in range(4)]
+    RElbowRoll = [[0 for x in range(4)] for x in range(4)]
+    RWristRoll = [[0 for x in range(4)] for x in range(4)]
+    base_to_start = [[0 for x in range(4)] for x in range(4)]
 
-    shape_name = ""
-    start_pos = 0.0
-    way_points = []
-    shape = [shape_name, start_pos, way_points]
+    stiffness_on(motionProxy)
 
     # Send NAO to Pose Init
     postureProxy.goToPosture("StandInit", 0.5)
 
     effector   = "RArm"
-    space      = motion.FRAME_TORSO
+    space      = motion.FRAME_BODY
     axisMask   = almath.AXIS_MASK_VEL    # just control position
     isAbsolute = False
 
-   if shape == "line"
-     shape = ["line",
+   # Since we are in relative, the current position is zero
+   currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-         # Since we are in relative, the current position is zero
-         currentPos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+   if shape_name is "line":
+     path = [transformation_matrices(0,0,10,0), currentPos]
+     times = [2.0, 10.0]
+   elif shape_name is "square":
+     break
+   elif shape_name is "triangle":
+     break
+   elif shape_name is "circle":
+     break
+   else:
+     print shape_name + " was not programmed to be drawn."
 
-         # Define the changes relative to the current position
-         dx         =  0.06      # translation axis X (meters)
-         dy         =  0.03      # translation axis Y (meters)
-         dz         =  0.00      # translation axis Z (meters)
-         dwx        =  0.00      # rotation axis X (radians)
-         dwy        =  0.00      # rotation axis Y (radians)
-         dwz        =  0.00      # rotation axis Z (radians)
-         targetPos  = [dx, dy, dz, dwx, dwy, dwz]
+   motionProxy.positionInterpolation(effector, space, path, axisMask, times, isAbsolute)
 
-         # Go to the target and back again
-         path       = [targetPos, currentPos]
-         times      = [2.0, 10.0] # seconds
-
-         motionProxy.positionInterpolation(effector, space, path,
-           axisMask, times, isAbsolute)
-
-         def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
-         temp = 0.0
+def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
+  temp = 0.0
          for i in range(rows):
-         for j in range(columns):
-         if i == 0 and j == 0:
-         temp = math.cos(theta*math.pi/180.0)
+           for j in range(columns):
+             if i == 0 and j == 0:
+               temp = math.cos(theta*math.pi/180.0)
          if temp == -0:
-         temp = 0.0
+           temp = 0.0
          matrix[i][j] = round(temp)
          if i == 0 and j == 1:
-         temp = (-(math.sin(theta*math.pi/180.0))*math.cos(alpha*math.pi/180.0))
+           temp = (-(math.sin(theta*math.pi/180.0))*math.cos(alpha*math.pi/180.0))
          if temp == -0:
-         temp = 0.0
+           temp = 0.0
          matrix[i][j] = round(temp)
          if i == 0 and j == 2:
-         temp = (math.sin(theta*math.pi/ 180.0) * math.sin(alpha*math.pi/ 180.0))
+           temp = (math.sin(theta*math.pi/ 180.0) * math.sin(alpha*math.pi/ 180.0))
          if temp == -0:
-         temp = 0.0
+           temp = 0.0
          matrix[i][j] = round(temp)
          if i == 0 and j == 3:
-         temp = (a * math.cos(theta*math.pi/180.0))
+           temp = (a * math.cos(theta*math.pi/180.0))
          if temp == -0:
-         temp = 0.0
+           temp = 0.0
          matrix[i][j] = round(temp)
          if i == 1 and j == 0:
-         temp = math.sin(theta*math.pi/180.0)
+           temp = math.sin(theta*math.pi/180.0)
          if temp == -0:
-         temp = 0.0
+           temp = 0.0
          matrix[i][j] = round(temp)
          if i == 1 and j == 1:
-       temp = (math.cos(theta*math.pi/180.0)*math.cos(alpha*math.pi/180.0))
+           temp = (math.cos(theta*math.pi/180.0)*math.cos(alpha*math.pi/180.0))
                 if temp == -0:
                   temp = 0.0
                 matrix[i][j] = round(temp)
@@ -288,8 +289,8 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
     return m3
 
 # for debugging purposes
-def test_transformation_matrices():
-  # initialize matrices
+def transformation_matrices(theta0, theta1, theta2, theta3):
+    # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
     RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
     RElbowYaw = [[0 for x in range(4)] for x in range(4)]
@@ -297,6 +298,7 @@ def test_transformation_matrices():
     RWristRoll = [[0 for x in range(4)] for x in range(4)]
     base_to_start = [[0 for x in range(4)] for x in range(4)]
 
+    """
     # process file
     print("Processing files in input.txt.")
     f = open('input.txt', 'r')
@@ -307,6 +309,7 @@ def test_transformation_matrices():
     theta4 = f.readline()
     f.close()
     print "Finished processing file."
+    """
 
     # bounds checking (to prevent overheating)
     print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
@@ -347,6 +350,8 @@ def test_transformation_matrices():
     pretty_print("RWristRoll",RWristRoll)
     base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristRoll)
     pretty_print("base_to_start", base_to_start)
+
+    return base_to_start
 
 if __name__ == '__main__':
   print("\nWelcome to the CannyBot Program!\n")
