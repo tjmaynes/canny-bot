@@ -150,8 +150,8 @@ def robo_vision():
     exit(0)
 
 def create_grid(start):
-  rows = 7
-  columns = 7
+  rows = 4
+  columns = 4
   grid = [[0 for x in range(rows)] for x in range(columns)]
 
   # traverse through matrix and add theta values based on measurements of space in "invisible" grid
@@ -162,129 +162,33 @@ def create_grid(start):
       elif i == 0 and j == 1:
         grid[i][j] = [1,2,1,2]
       elif i == 0 and j == 2:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 0 and j == 3:
-        break
-      elif i == 0 and j == 4:
-        break
-      elif i == 0 and j == 5:
-        break
-      elif i == 0 and j == 6:
-        break
-      elif i == 0 and j == 7:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 1 and j == 0:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 1 and j == 1:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 1 and j == 2:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 1 and j == 3:
-        break
-      elif i == 1 and j == 4:
-        break
-      elif i == 1 and j == 5:
-        break
-      elif i == 1 and j == 6:
-        break
-      elif i == 1 and j == 7:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 2 and j == 0:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 2 and j == 1:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 2 and j == 2:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 2 and j == 3:
-        break
-      elif i == 2 and j == 4:
-        break
-      elif i == 2 and j == 5:
-        break
-      elif i == 2 and j == 6:
-        break
-      elif i == 2 and j == 7:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 3 and j == 0:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 3 and j == 1:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 3 and j == 2:
-        break
+        grid[i][j] = [1,2,1,2]
       elif i == 3 and j == 3:
-        break
-      elif i == 3 and j == 4:
-        break
-      elif i == 3 and j == 5:
-        break
-      elif i == 3 and j == 6:
-        break
-      elif i == 3 and j == 7:
-        break
-      elif i == 4 and j == 0:
-        break
-      elif i == 4 and j == 1:
-        break
-      elif i == 4 and j == 2:
-        break
-      elif i == 4 and j == 3:
-        break
-      elif i == 4 and j == 4:
-        break
-      elif i == 4 and j == 5:
-        break
-      elif i == 4 and j == 6:
-        break
-      elif i == 4 and j == 7:
-        break
-      elif i == 5 and j == 0:
-        break
-      elif i == 5 and j == 1:
-        break
-      elif i == 5 and j == 2:
-        break
-      elif i == 5 and j == 3:
-        break
-      elif i == 5 and j == 4:
-        break
-      elif i == 5 and j == 5:
-        break
-      elif i == 5 and j == 6:
-        break
-      elif i == 5 and j == 7:
-        break
-      elif i == 6 and j == 0:
-        break
-      elif i == 6 and j == 1:
-        break
-      elif i == 6 and j == 2:
-        break
-      elif i == 6 and j == 3:
-        break
-      elif i == 6 and j == 4:
-        break
-      elif i == 6 and j == 5:
-        break
-      elif i == 6 and j == 6:
-        break
-      elif i == 6 and j == 7:
-        break
-      elif i == 7 and j == 0:
-        break
-      elif i == 7 and j == 1:
-        break
-      elif i == 7 and j == 2:
-        break
-      elif i == 7 and j == 3:
-        break
-      elif i == 7 and j == 4:
-        break
-      elif i == 7 and j == 5:
-        break
-      elif i == 7 and j == 6:
-        break
-      elif i == 7 and j == 7:
-        break
+        grid[i][j] = [1,2,1,2]
       else:
         # should never reach here!
         break
