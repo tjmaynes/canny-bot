@@ -161,9 +161,133 @@ def create_grid(start):
         grid[i][j] = start
       elif i == 0 and j == 1:
         grid[i][j] = [1,2,1,2]
-      else:
+      elif i == 0 and j == 2:
         break
-
+      elif i == 0 and j == 3:
+        break
+      elif i == 0 and j == 4:
+        break
+      elif i == 0 and j == 5:
+        break
+      elif i == 0 and j == 6:
+        break
+      elif i == 0 and j == 7:
+        break
+      elif i == 1 and j == 0:
+        break
+      elif i == 1 and j == 1:
+        break
+      elif i == 1 and j == 2:
+        break
+      elif i == 1 and j == 3:
+        break
+      elif i == 1 and j == 4:
+        break
+      elif i == 1 and j == 5:
+        break
+      elif i == 1 and j == 6:
+        break
+      elif i == 1 and j == 7:
+        break
+      elif i == 2 and j == 0:
+        break
+      elif i == 2 and j == 1:
+        break
+      elif i == 2 and j == 2:
+        break
+      elif i == 2 and j == 3:
+        break
+      elif i == 2 and j == 4:
+        break
+      elif i == 2 and j == 5:
+        break
+      elif i == 2 and j == 6:
+        break
+      elif i == 2 and j == 7:
+        break
+      elif i == 3 and j == 0:
+        break
+      elif i == 3 and j == 1:
+        break
+      elif i == 3 and j == 2:
+        break
+      elif i == 3 and j == 3:
+        break
+      elif i == 3 and j == 4:
+        break
+      elif i == 3 and j == 5:
+        break
+      elif i == 3 and j == 6:
+        break
+      elif i == 3 and j == 7:
+        break
+      elif i == 4 and j == 0:
+        break
+      elif i == 4 and j == 1:
+        break
+      elif i == 4 and j == 2:
+        break
+      elif i == 4 and j == 3:
+        break
+      elif i == 4 and j == 4:
+        break
+      elif i == 4 and j == 5:
+        break
+      elif i == 4 and j == 6:
+        break
+      elif i == 4 and j == 7:
+        break
+      elif i == 5 and j == 0:
+        break
+      elif i == 5 and j == 1:
+        break
+      elif i == 5 and j == 2:
+        break
+      elif i == 5 and j == 3:
+        break
+      elif i == 5 and j == 4:
+        break
+      elif i == 5 and j == 5:
+        break
+      elif i == 5 and j == 6:
+        break
+      elif i == 5 and j == 7:
+        break
+      elif i == 6 and j == 0:
+        break
+      elif i == 6 and j == 1:
+        break
+      elif i == 6 and j == 2:
+        break
+      elif i == 6 and j == 3:
+        break
+      elif i == 6 and j == 4:
+        break
+      elif i == 6 and j == 5:
+        break
+      elif i == 6 and j == 6:
+        break
+      elif i == 6 and j == 7:
+        break
+      elif i == 7 and j == 0:
+        break
+      elif i == 7 and j == 1:
+        break
+      elif i == 7 and j == 2:
+        break
+      elif i == 7 and j == 3:
+        break
+      elif i == 7 and j == 4:
+        break
+      elif i == 7 and j == 5:
+        break
+      elif i == 7 and j == 6:
+        break
+      elif i == 7 and j == 7:
+        break
+      else:
+        # should never reach here!
+        break
   return grid
 
 def robo_motion(shape_name):
@@ -302,7 +426,13 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
     return m3
 
 # for debugging purposes
-def transformation_matrices(theta0, theta1, theta2, theta3):
+def transformation_matrices(thelist):
+   # get theta values from the list
+   theta0 = thelist[0]
+   theta1 = thelist[1]
+   theta2 = thelist[2]
+   theta3 = thelist[3]
+  
     # initialize matrices
     RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
     RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
