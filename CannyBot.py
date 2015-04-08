@@ -201,8 +201,26 @@ def robo_motion(shape_name):
 
     stiffness_on(motionProxy)
 
+    # open nao right hand
+    motionProxy.openHand('RHand')
+
+    # grab marker
+    motionProxy.closeHand('RHand')
+
+    time.sleep(2)
+    
+    # say thank you for the pen Nao
+    voice.say("Thank you for the marker!")
+
+    # lets begin
+    voice.say("Let's begin.")
+
+    # just sleep for 3 seconds
+    time.sleep(3)
+    
     start = [0,10,0,-1]
 
+    # create grid
     grid = create_grid(start)
 
     # Send NAO to Pose Init
@@ -227,8 +245,12 @@ def robo_motion(shape_name):
      times = [2.0, 4.0, 4.0, 2.0]
    else:
      print shape_name + " was not programmed to be drawn."
+     break
 
-   motionProxy.transferInterpolation(effector, space, path, axisMask, times, isAbsolute)
+   if shape_name is "circle":
+     break
+   else:
+     motionProxy.transferInterpolation(effector, space, path, axisMask, times, isAbsolute)
 
 def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
   temp = 0.0
