@@ -1,7 +1,7 @@
 # Filename: CannyBot.py
 # Authors: Tommy Lin, TJ Maynes
 
-import os, sys, math, motion, almath
+import os, sys, math, motion, almath, time
 from StringIO import StringIO
 from PIL import Image
 import cv2
@@ -36,8 +36,8 @@ fps = 30
 
 def pretty_print(name, matrix):
   print "\nThis is matrix = " + name
-    for row in matrix:
-      print row
+  for row in matrix:
+    print row
 
 """
 
@@ -48,17 +48,17 @@ try:
   motionProxy = ALProxy("ALMotion", ip, port)
 except Exception, e:
   print "Could not create proxy to ALMotion"
-    print "Error was: ", e
+  print "Error was: ", e
 try:
   postureProxy = ALProxy("ALRobotPosture", ip, port)
 except Exception, e:
   print "Could not create proxy to ALRobotPosture"
-    print "Error was: ", e
+  print "Error was: ", e
 try:
   voice = ALProxy("ALTextToSpeech", ip, port)
 except Exception, e:
   print "Could not create proxy to ALTextToSpeech"
-    print "Error was: ", e
+  print "Error was: ", e
 
 """
 
@@ -67,10 +67,10 @@ main functions
 
 def stiffness_on(proxy):
   #We use the "Body" name to signify the collection of all joints
-    pNames = "Body"
-    pStiffnessLists = 1.0
-    pTimeLists = 1.0
-    proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+  pNames = "LArm"
+  pStiffnessLists = 0.0
+  pTimeLists = 1.0
+  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
 def robo_vision():
   # First get an image from Nao, then show it on the screen with PIL.
@@ -126,24 +126,24 @@ def robo_vision():
   # only return value when you find a circle or square
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
-      if len(approx)==2:
-        robo_motion("line")
-        break
-      if len(approx)==5:
-        robo_motion("pentagon")
-        break
-      elif len(approx)==3:
-        robo_motion("triangle")
-        break
-      elif len(approx)==4:
-        robo_motion("square")
-        break
-      elif len(approx) == 9:
-        robo_motion("half-circle")
-        break
-      elif len(approx) > 15:
-        robo_motion("circle")
-        break
+    if len(approx)==2:
+      robo_motion("line")
+      break
+    elif len(approx)==5:
+      robo_motion("pentagon")
+      break
+    elif len(approx)==3:
+      robo_motion("triangle")
+      break
+    elif len(approx)==4:
+      robo_motion("square")
+      break
+    elif len(approx) == 9:
+      robo_motion("half-circle")
+      break
+    elif len(approx) > 15:
+      robo_motion("circle")
+      break
 
   c = cv2.waitKey(50)
   if c == 27:
@@ -160,97 +160,96 @@ def create_grid(start):
       if i == 0 and j == 0:
         grid[i][j] = start
       elif i == 0 and j == 1:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 0 and j == 2:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 0 and j == 3:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 1 and j == 0:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 1 and j == 1:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 1 and j == 2:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 1 and j == 3:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 2 and j == 0:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 2 and j == 1:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 2 and j == 2:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 2 and j == 3:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 0:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 1:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 2:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 3:
-        grid[i][j] = [1,2,1,2]
+        grid[i][j] = [1,2,1,2,1]
       else:
         # should never reach here!
         break
   return grid
 
 def robo_motion(shape_name):
-  voice.say("I will draw a " + shape);
+  voice.say("I will draw a " + shape_name);
 
-    print "\nNAO Robot will draw this shape: " + shape + "."
+  print "\nNAO Robot will draw this shape: " + shape_name + "."
 
-    stiffness_on(motionProxy)
+  stiffness(motionProxy)
 
-    # open nao right hand
-    motionProxy.openHand('RHand')
+  # open nao right hand
+  motionProxy.openHand('RHand')
 
-    # grab marker
-    motionProxy.closeHand('RHand')
+  time.sleep(3)
 
-    time.sleep(2)
+  # grab marker
+  motionProxy.closeHand('RHand')
+
+  # say thank you for the pen Nao
+  voice.say("Thank you for the marker!")
+
+  # lets begin
+  voice.say("Let's begin.")
+
+  # just sleep for 3 seconds
+  time.sleep(3)
     
-    # say thank you for the pen Nao
-    voice.say("Thank you for the marker!")
+  start = [0,10,0,-1,0]
 
-    # lets begin
-    voice.say("Let's begin.")
+  # create grid
+  grid = create_grid(start)
 
-    # just sleep for 3 seconds
-    time.sleep(3)
-    
-    start = [0,10,0,-1]
+  print grid[0][0]
+  print grid[3][0]
 
-    # create grid
-    grid = create_grid(start)
+  # Send NAO to Pose Init
+  #postureProxy.goToPosture("StandInit", 0.5)
 
-    # Send NAO to Pose Init
-    postureProxy.goToPosture("StandInit", 0.5)
+  effector   = "RArm"
+  space      = motion.SPACE_TORSO
+  axisMask   = almath.AXIS_MASK_VEL    # just control position
+  isAbsolute = False
 
-    effector   = "RArm"
-    space      = motion.FRAME_ROBOT
-    axisMask   = almath.AXIS_MASK_VEL    # just control position
-    isAbsolute = False
+  # Since we are in relative, the current position is zero
+  current_pos = transformation_matrices(grid[0][0])
 
-   # Since we are in relative, the current position is zero
-   current_pos = transformation_matrices(grid[0][0])
+  if shape_name is "line":
+    path = [transformation_matrices(grid[3][0]), current_pos]
+    times = [4.0]
+  elif shape_name is "square":
+    path = [current_pos, transformation_matrices(grid[4][0]), transformation_matrices(grid[4,4]), transformation_matrics(grid[0][4]), current_pos]
+    times = [2.0, 4.0, 4.0, 4.0, 2.0]
+  elif shape_name is "triangle":
+    path = [current_pos, transformation_matrics(grid[4][4]), transformation_matrics(grid[0][4]), current_pos]
+    times = [2.0, 4.0, 4.0, 2.0]
+  else:
+    print shape_name + " was not programmed to be drawn."
 
-   if shape_name is "line":
-     path = [current_pos, transformation_matrices(grid[5,0])]
-     times = [2.0, 6.0]
-   elif shape_name is "square":
-     path = [current_pos, transformation_matrices(grid[5,0]), transformation_matrices(grid[5,5]), transformation_matrics(grid[0,5]), current_pos]
-     times = [2.0, 4.0, 4.0, 4.0, 2.0]
-   elif shape_name is "triangle":
-     path = [current_pos, transformation_matrics(grid[5,5]), transformation_matrics(grid[0,5]), current_pos]
-     times = [2.0, 4.0, 4.0, 2.0]
-   else:
-     print shape_name + " was not programmed to be drawn."
-     break
-
-   if shape_name is "circle":
-     break
-   else:
-     motionProxy.transferInterpolation(effector, space, path, axisMask, times, isAbsolute)
+  motionProxy.transformInterpolation(effector, space, path, axisMask, times, isAbsolute)
 
 def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
   temp = 0.0
@@ -349,76 +348,86 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
       for j in range(columns):
         for inner in range(4):
           m3[i][j] = round(m3[i][j]+m2[i][inner]*RWristRoll[inner][j])
+
     return m3
 
 # for debugging purposes
 def transformation_matrices(thelist):
-   # get theta values from the list
-   theta0 = thelist[0]
-   theta1 = thelist[1]
-   theta2 = thelist[2]
-   theta3 = thelist[3]
+  # get theta values from the list
+  theta0 = thelist[0]
+  theta1 = thelist[1]
+  theta2 = thelist[2]
+  theta3 = thelist[3]
+  theta4 = thelist[4]
   
-    # initialize matrices
-    RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
-    RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
-    RElbowYaw = [[0 for x in range(4)] for x in range(4)]
-    RElbowRoll = [[0 for x in range(4)] for x in range(4)]
-    RWristRoll = [[0 for x in range(4)] for x in range(4)]
-    base_to_start = [[0 for x in range(4)] for x in range(4)]
+  # initialize matrices
+  RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
+  RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
+  RElbowYaw = [[0 for x in range(4)] for x in range(4)]
+  RElbowRoll = [[0 for x in range(4)] for x in range(4)]
+  RWristRoll = [[0 for x in range(4)] for x in range(4)]
+  base_to_start = [[0 for x in range(4)] for x in range(4)]
 
-    # bounds checking (to prevent overheating)
-    #print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
+  # bounds checking (to prevent overheating)
+  #print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
-    if float(theta0) >= 119.5:
-      theta0 = 110
-    elif float(theta0) <= -119.5:
-      theta0 = -110
-    if float(theta1) > 18.0:
-      theta1 = 15
-    elif float(theta1) < -76:
-      theta1 = -70
-    if float(theta2) >= 119.5:
-      theta2 = 110
-    elif float(theta2) <= -119.5:
-      theta2 = -110
-    if float(theta3) >= 88.5:
-      theta3 = 80
-    elif float(theta3) <= 2:
-      theta3 = 5
-    if float(theta4) >= 104.5:
-      theta4 = 100
-    elif float(theta4) <= -104.5:
-      theta4 = -100
+  if float(theta0) >= 119.5:
+    theta0 = 110
+  elif float(theta0) <= -119.5:
+    theta0 = -110
+  elif float(theta1) > 18.0:
+    theta1 = 15
+  elif float(theta1) < -76:
+    theta1 = -70
+  elif float(theta2) >= 119.5:
+    theta2 = 110
+  elif float(theta2) <= -119.5:
+    theta2 = -110
+  elif float(theta3) >= 88.5:
+    theta3 = 80
+  elif float(theta3) <= 2:
+    theta3 = 5
+  elif float(theta4) >= 104.5:
+    theta4 = 100
+  elif float(theta4) <= -104.5:
+    theta4 = -100
+  else:
+    print "no issues!"
 
-    #print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
+  #print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
-    # transformation matrices
-    RShoulderPitch = transformation_matrix("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
-    RShoulderRoll = transformation_matrix("RShoulderRoll",RShoulderRoll,rows,columns,0,math.pi/2.0, 0, float(theta1) + (math.pi/2.0))
-    RElbowYaw = transformation_matrix("RElbowYaw",RElbowYaw,rows,columns,-ELBOW_OFFSET_Y, (math.pi / 2.0), UPPER_ARM_LENGTH, float(theta2))
-    RElbowRoll = transformation_matrix("RElbowRoll",RElbowRoll,rows,columns,0, -(math.pi / 2.0), 0, float(theta3))
-    RWristRoll = transformation_matrix("RWristRoll",RWristRoll,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
-    base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristRoll)
+  # transformation matrices
+  RShoulderPitch = transformation_matrix("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
+  pretty_print("RShoulderPitch", RShoulderPitch)
+  RShoulderRoll = transformation_matrix("RShoulderRoll",RShoulderRoll,rows,columns,0,math.pi/2.0, 0, float(theta1) + (math.pi/2.0))
+  pretty_print("RShoulderRoll", RShoulderRoll)
+  RElbowYaw = transformation_matrix("RElbowYaw",RElbowYaw,rows,columns,-ELBOW_OFFSET_Y, (math.pi / 2.0), UPPER_ARM_LENGTH, float(theta2))
+  pretty_print("RElbowYaw", RElbowYaw)
+  RElbowRoll = transformation_matrix("RElbowRoll",RElbowRoll,rows,columns,0, -(math.pi / 2.0), 0, float(theta3))
+  pretty_print("RElbowRoll", RElbowRoll)
+  RWristRoll = transformation_matrix("RWristRoll",RWristRoll,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
+  pretty_print("RWristRoll", RWristRoll)
+  base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristRoll)
+  pretty_print("base_to_start", base_to_start)
 
-    return base_to_start
+  return base_to_start
 
 if __name__ == '__main__':
   print("\nWelcome to the CannyBot Program!\n")
 
-    while (true):
-      # have nao look at shapes!
+  while (True):
+    # have nao look at shapes!
+    robo_vision()
+
+    # debugging
+    #test_transformation_matrices()
+
+    # run again?
+    input = raw_input("\nWould you like to run this program again?")
+    if input == "n" or input == "no" or input == "0":
+      break
+    else:
       robo_vision()
 
-      # debugging
-      #test_transformation_matrices()
-
-      # run again?
-      input = raw_input("\nWould you like to run this program again?")
-      if input == "n" or input == "no" or input == "0":
-        break
-      else:
-        robo_vision()
-
     # end of line
-    print("End of Program.")
+  print("End of Program.")
