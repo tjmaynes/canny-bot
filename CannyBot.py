@@ -1,5 +1,8 @@
-# Filename: CannyBot.py
-# Authors: Tommy Lin, TJ Maynes
+"""
+@file: CannyBot.py
+@authors: Tommy Lin, TJ Maynes
+@subject: getting the NAO Robot to draw the shapes it "sees" using image processing
+"""
 
 import os, sys, math, motion, almath, time
 from StringIO import StringIO
@@ -12,7 +15,6 @@ from naoqi import ALProxy
 global variables
 
 """
-
 # nao right arm defaults
 ELBOW_OFFSET_Y = 15
 UPPER_ARM_LENGTH = 105

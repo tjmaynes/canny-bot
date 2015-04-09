@@ -3,7 +3,7 @@ getting the NAO Robot to draw the shapes it "sees" using image processing
 
 ![screenshot](/debug/NAOVISION.png)
 
-Currently works on Windows! Was not able to test on other operating systems because we did not have access to the other SDKs.
+*Currently works on Windows, see notes below!*
 
 To run just enter into terminal,
 * python CannyBot.py
@@ -35,3 +35,6 @@ On Ubuntu:
 * sudo apt-get install python-dev python-tk python-numpy python3-dev python3-tk python3-numpy
 * sudo apt-get install sudo apt-get install libopencv-dev
 * Done!
+
+## Notes
+Was not able to test on other operating systems because we did not have access to the other SDKs.
