@@ -9,12 +9,9 @@ from naoqi import ALProxy
 
 """
 
-helper functions and values
-"""
+global variables
 
-# defaults
-rows = 4
-columns = 4
+"""
 
 # nao right arm defaults
 ELBOW_OFFSET_Y = 15
@@ -34,16 +31,34 @@ resolution = 2   #VGA
 color_space = 11  #RGB
 fps = 30
 
+"""
+
+helper functions
+
+"""
+
 def pretty_print(name, matrix):
   print "\nThis is matrix = " + name
   for row in matrix:
     print row
+def stiffness_on(proxy):
+  #We use the "Body" name to signify the collection of all joints
+  pNames = "Body"
+  pStiffnessLists = 0.0
+  pTimeLists = 1.0
+  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+def stiffness_off(proxy):
+  #We use the "Body" name to signify the collection of all joints
+  pNames = "Body"
+  pStiffnessLists = 0.0
+  pTimeLists = 1.0
+  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
 """
 
 Connect to NAO Robot on startup
-"""
 
+"""
 try:
   motionProxy = ALProxy("ALMotion", ip, port)
 except Exception, e:
@@ -65,13 +80,121 @@ except Exception, e:
 main functions
 """
 
-def stiffness_on(proxy):
-  #We use the "Body" name to signify the collection of all joints
-  pNames = "LArm"
-  pStiffnessLists = 0.0
-  pTimeLists = 1.0
-  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+"""
 
+Debugging
+Description: manually get joint angles within NAO's workspace
+
+"""
+def get_joint_angles():
+    # which coordinate location to record
+    input_value = raw_input("\Which coordinate?")
+    print input_value
+
+    # posture
+    postureProxy.goToPosture("StandInit", 0.5)
+
+    #We use the "Body" name to signify the collection of all joints
+    pNames = "RArm"
+    pStiffnessLists = 0.0
+    pTimeLists = 1.0
+    motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+
+    # Example that finds the difference between the command and sensed angles.
+    names         = "RArm"
+    useSensors    = False
+    commandAngles = motionProxy.getAngles(names, useSensors)
+    print "Command angles:"
+    print str(commandAngles)
+    print ""
+
+    useSensors  = True
+    sensorAngles = motionProxy.getAngles(names, useSensors)
+    print "Sensor angles:"
+    print str(sensorAngles)
+    print ""
+
+    errors = []
+    for i in range(0, len(commandAngles)):
+        errors.append(commandAngles[i]-sensorAngles[i])
+    print "Errors"
+    print errors
+
+"""
+@function: lookup_table
+@description: create lookup table of size 5 by 5 with each coordinate
+containing the joint angles (theta values) to get to that position in
+NAO's workspace.
+@return: a table of joint angles
+
+"""
+def lookup_table(start):#, canny, points):
+  rows = 5
+  columns = 5
+  grid = [[0 for x in range(rows)] for x in range(columns)]
+
+  # traverse through matrix and add theta values based on measurements of space in "invisible" grid
+  for i in range(rows):
+    for j in range(columns):
+      if i == 0 and j == 0:
+        grid[i][j] = start
+      elif i == 0 and j == 1:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 0 and j == 2:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 0 and j == 3:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 0 and j == 4:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 1 and j == 0:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 1 and j == 1:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 1 and j == 2:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 1 and j == 3:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 1 and j == 4:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 2 and j == 0:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 2 and j == 1:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 2 and j == 2:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 2 and j == 3:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 2 and j == 4:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 3 and j == 0:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 3 and j == 1:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 3 and j == 2:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 3 and j == 3:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 3 and j == 4:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 4 and j == 0:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 4 and j == 1:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 4 and j == 2:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 4 and j == 3:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 4 and j == 4:
+        grid[i][j] = [1,2,1,2,1]
+      else:
+        break
+  return grid
+
+"""
+@function: robot_vision
+@description: Use NAO's camera to detect the shape to draw. Uses
+PIL at first, then uses Canny Edge Detection via OpenCV.
+"""
 def robo_vision():
   # First get an image from Nao, then show it on the screen with PIL.
   video_proxy = ALProxy("ALVideoDevice", ip, port)
@@ -108,11 +231,11 @@ def robo_vision():
   # And do Canny edge detection
   canny = cv2.Canny(blur, 10, 100)
 
-  """
   # uncomment area to see what the NAO "sees"
   # debugging -- write canny to file
   cv2.imwrite("debug/NAOVISION.png", canny)
 
+  """
   # debugging -- what does NAO see
   cv2.imshow("canny", canny)
 
@@ -127,131 +250,102 @@ def robo_vision():
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
     if len(approx)==2:
-      robo_motion("line")
+      robo_motion("line", canny, cnt)
       break
     elif len(approx)==5:
-      robo_motion("pentagon")
+      robo_motion("pentagon", canny, cnt)
       break
     elif len(approx)==3:
-      robo_motion("triangle")
+      robo_motion("triangle", canny, cnt)
       break
     elif len(approx)==4:
-      robo_motion("square")
+      robo_motion("square", canny, cnt)
       break
     elif len(approx) == 9:
-      robo_motion("half-circle")
+      robo_motion("half-circle", canny, cnt)
       break
     elif len(approx) > 15:
-      robo_motion("circle")
+      robo_motion("circle", canny, cnt)
       break
 
   c = cv2.waitKey(50)
   if c == 27:
     exit(0)
 
-def create_grid(start):
-  rows = 4
-  columns = 4
-  grid = [[0 for x in range(rows)] for x in range(columns)]
+"""
 
-  # traverse through matrix and add theta values based on measurements of space in "invisible" grid
-  for i in range(rows):
-    for j in range(columns):
-      if i == 0 and j == 0:
-        grid[i][j] = start
-      elif i == 0 and j == 1:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 0 and j == 2:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 0 and j == 3:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 0:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 1:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 2:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 3:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 0:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 1:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 2:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 3:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 0:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 1:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 2:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 3:
-        grid[i][j] = [1,2,1,2,1]
-      else:
-        # should never reach here!
-        break
-  return grid
+Description: draws the shape seen by NAO.
 
-def robo_motion(shape_name):
+"""
+def robo_motion(shape_name, points, image):
+  # NAO, what are we going to draw?
   voice.say("I will draw a " + shape_name);
-
   print "\nNAO Robot will draw this shape: " + shape_name + "."
 
-  stiffness(motionProxy)
+  # Send NAO to Pose Init
+  postureProxy.goToPosture("StandInit", 0.5)
 
-  # open nao right hand
+  # Open nao right hand
   motionProxy.openHand('RHand')
 
-  time.sleep(3)
+  # open hand for a few seconds
+  time.sleep(2)
 
   # grab marker
   motionProxy.closeHand('RHand')
 
   # say thank you for the pen Nao
-  voice.say("Thank you for the marker!")
-
-  # lets begin
-  voice.say("Let's begin.")
+  voice.say("Thank you for the marker! Let's begin!")
 
   # just sleep for 3 seconds
   time.sleep(3)
-    
+
+  """
+  lets start at these coordinates
+  rshoulderpitch, rshoulderroll, relbowyaw, rwristyaw, rhand
+  """
   start = [0,10,0,-1,0]
 
-  # create grid
-  grid = create_grid(start)
+  # create grid plus stage 3 setup
+  grid = lookup_table(points)# image, start)
 
+  # debug
   print grid[0][0]
   print grid[3][0]
 
-  # Send NAO to Pose Init
-  #postureProxy.goToPosture("StandInit", 0.5)
-
+  # We will be moving the left arm
   effector   = "RArm"
   space      = motion.SPACE_TORSO
-  axisMask   = almath.AXIS_MASK_VEL    # just control position
+  axisMask   = almath.AXIS_MASK_VEL
   isAbsolute = False
 
-  # Since we are in relative, the current position is zero
-  current_pos = transformation_matrices(grid[0][0])
+  # lets set our starting position
+  start_pos = transformation_matrices(grid[0][0])
 
+  # draw specific shapes
   if shape_name is "line":
-    path = [transformation_matrices(grid[3][0]), current_pos]
+    path = [start_pos, transformation_matrices(grid[3][0]), start_pos]
     times = [4.0]
   elif shape_name is "square":
-    path = [current_pos, transformation_matrices(grid[4][0]), transformation_matrices(grid[4,4]), transformation_matrics(grid[0][4]), current_pos]
+    path = [start_pos, transformation_matrices(grid[4][0]), transformation_matrices(grid[4,4]), transformation_matrics(grid[0][4]), start_pos]
     times = [2.0, 4.0, 4.0, 4.0, 2.0]
   elif shape_name is "triangle":
-    path = [current_pos, transformation_matrics(grid[4][4]), transformation_matrics(grid[0][4]), current_pos]
+    path = [start_pos, transformation_matrics(grid[4][4]), transformation_matrics(grid[0][4]), start_pos]
     times = [2.0, 4.0, 4.0, 2.0]
   else:
     print shape_name + " was not programmed to be drawn."
 
+  # draw the shape!
   motionProxy.transformInterpolation(effector, space, path, axisMask, times, isAbsolute)
 
-def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
+  voice.say("Here is your " + shape_name)
+
+"""
+@function: transformation
+@description: create a transformation matrix from a given joint angle.
+@returns: transformation matrix for given joint.
+"""
+def transformation(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
   temp = 0.0
   for i in range(rows):
     for j in range(columns):
@@ -322,7 +416,12 @@ def transformation_matrix(name_of_matrix, matrix, rows, columns, a, alpha, dista
          matrix[i][j] = 1.0
   return matrix
 
-def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristRoll):
+"""
+@function: multiply_matrices
+@description: Multiply the joints together to get end effector.
+@returns end effector.
+"""
+def multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw):
     # initialize temp matrices
     m0 = [[0 for x in range(4)] for x in range(4)]
     m1 = [[0 for x in range(4)] for x in range(4)]
@@ -347,26 +446,32 @@ def  multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWr
     for i in range(rows):
       for j in range(columns):
         for inner in range(4):
-          m3[i][j] = round(m3[i][j]+m2[i][inner]*RWristRoll[inner][j])
-
+          m3[i][j] = round(m3[i][j]+m2[i][inner]*RWristYaw[inner][j])
     return m3
 
-# for debugging purposes
-def transformation_matrices(thelist):
+"""
+@function: transformation_matrices
+@description: Pass a list of thetas for each joint to create our end effector
+@returns: a final transformation matrix (end effector)
+"""
+def transformation_matrices(list_of_thetas):
+  rows = 4
+  columns = 4
+
   # get theta values from the list
-  theta0 = thelist[0]
-  theta1 = thelist[1]
-  theta2 = thelist[2]
-  theta3 = thelist[3]
-  theta4 = thelist[4]
-  
-  # initialize matrices
-  RShoulderPitch = [[0 for x in range(4)] for x in range(4)]
-  RShoulderRoll = [[0 for x in range(4)] for x in range(4)]
-  RElbowYaw = [[0 for x in range(4)] for x in range(4)]
-  RElbowRoll = [[0 for x in range(4)] for x in range(4)]
-  RWristRoll = [[0 for x in range(4)] for x in range(4)]
-  base_to_start = [[0 for x in range(4)] for x in range(4)]
+  theta0 = list_of_thetas[0]
+  theta1 = list_of_thetas[1]
+  theta2 = list_of_thetas[2]
+  theta3 = list_of_thetas[3]
+  theta4 = list_of_thetas[4]
+
+  # initialize transformation matrices
+  RShoulderPitch = [[0 for x in range(rows)] for x in range(columns)]
+  RShoulderRoll = [[0 for x in range(rows)] for x in range(columns)]
+  RElbowYaw = [[0 for x in range(rows)] for x in range(columns)]
+  RElbowRoll = [[0 for x in range(rows)] for x in range(columns)]
+  RWristYaw = [[0 for x in range(rows)] for x in range(columns)]
+  base_to_start = [[0 for x in range(rows)] for x in range(columns)]
 
   # bounds checking (to prevent overheating)
   #print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
@@ -397,17 +502,17 @@ def transformation_matrices(thelist):
   #print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
   # transformation matrices
-  RShoulderPitch = transformation_matrix("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
+  RShoulderPitch = transformation("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
   pretty_print("RShoulderPitch", RShoulderPitch)
-  RShoulderRoll = transformation_matrix("RShoulderRoll",RShoulderRoll,rows,columns,0,math.pi/2.0, 0, float(theta1) + (math.pi/2.0))
+  RShoulderRoll = transformation("RShoulderRoll",RShoulderRoll,rows,columns,0,math.pi/2.0, 0, float(theta1) + (math.pi/2.0))
   pretty_print("RShoulderRoll", RShoulderRoll)
-  RElbowYaw = transformation_matrix("RElbowYaw",RElbowYaw,rows,columns,-ELBOW_OFFSET_Y, (math.pi / 2.0), UPPER_ARM_LENGTH, float(theta2))
+  RElbowYaw = transformation("RElbowYaw",RElbowYaw,rows,columns,-ELBOW_OFFSET_Y, (math.pi / 2.0), UPPER_ARM_LENGTH, float(theta2))
   pretty_print("RElbowYaw", RElbowYaw)
-  RElbowRoll = transformation_matrix("RElbowRoll",RElbowRoll,rows,columns,0, -(math.pi / 2.0), 0, float(theta3))
+  RElbowRoll = transformation("RElbowRoll",RElbowRoll,rows,columns,0, -(math.pi / 2.0), 0, float(theta3))
   pretty_print("RElbowRoll", RElbowRoll)
-  RWristRoll = transformation_matrix("RWristRoll",RWristRoll,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
+  RWristYaw = transformation("RWristYaw",RWristYaw,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
   pretty_print("RWristRoll", RWristRoll)
-  base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristRoll)
+  base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristYaw)
   pretty_print("base_to_start", base_to_start)
 
   return base_to_start
@@ -416,18 +521,27 @@ if __name__ == '__main__':
   print("\nWelcome to the CannyBot Program!\n")
 
   while (True):
-    # have nao look at shapes!
-    robo_vision()
+    # have Nao Robot look at shapes!
+    #robo_vision()
 
-    # debugging
-    #test_transformation_matrices()
+    #debugging => get joint angles
+    joint_angles()
 
     # run again?
-    input = raw_input("\nWould you like to run this program again?")
+    input = raw_input("\nWould you like to run this program again? (y or n)")
     if input == "n" or input == "no" or input == "0":
       break
     else:
       robo_vision()
 
-    # end of line
+  # tron reference!
+  voice.say("End of line.")
+
+  # smooth transition ftw!
+  time.sleep(3)
+
+  # stiffness off
+  stiffness_off(motionProxy)
+
+  # end of program
   print("End of Program.")

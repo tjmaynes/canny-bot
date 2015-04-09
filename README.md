@@ -1,17 +1,16 @@
 # CannyBot
-getting a robot to draw the shapes it "sees" using image processing
+getting the NAO Robot to draw the shapes it "sees" using image processing
 
 ![screenshot](/debug/NAOVISION.png)
 
-
-Currently only works with Windows (still testing on OSX)!
+Currently works on Windows! Was not able to test on other operating systems because we did not have access to the other SDKs.
 
 To run just enter into terminal,
 * python CannyBot.py
 
 Dependencies:
-* Python 2.7.8
-* NAO Python SDK
+* Python 2.7.8 / Anaconda
+* NAO Python SDK for Windows
 * OpenCV 2.3.1 (only version that currently runs on NAO)
 
 ## OpenCV Setup
