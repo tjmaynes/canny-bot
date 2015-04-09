@@ -36,7 +36,6 @@ fps = 30
 helper functions
 
 """
-
 def pretty_print(name, matrix):
   print "\nThis is matrix = " + name
   for row in matrix:
@@ -76,15 +75,9 @@ except Exception, e:
   print "Error was: ", e
 
 """
-
-main functions
-"""
-
-"""
-
-Debugging
-Description: manually get joint angles within NAO's workspace
-
+@function: get_joint_angles()
+@description: manually get joint angles within NAO's workspace
+@return: a list of joint angles =>  [rshoulderpitch, rshoulderroll, relbowyaw, rwristyaw, rhand]
 """
 def get_joint_angles():
     # which coordinate location to record
@@ -126,7 +119,6 @@ def get_joint_angles():
 containing the joint angles (theta values) to get to that position in
 NAO's workspace.
 @return: a table of joint angles
-
 """
 def lookup_table(start):#, canny, points):
   rows = 5
@@ -300,10 +292,7 @@ def robo_motion(shape_name, points, image):
   # just sleep for 3 seconds
   time.sleep(3)
 
-  """
-  lets start at these coordinates
-  rshoulderpitch, rshoulderroll, relbowyaw, rwristyaw, rhand
-  """
+  #lets start at these coordinates
   start = [0,10,0,-1,0]
 
   # create grid plus stage 3 setup
@@ -343,7 +332,7 @@ def robo_motion(shape_name, points, image):
 """
 @function: transformation
 @description: create a transformation matrix from a given joint angle.
-@returns: transformation matrix for given joint.
+@return: transformation matrix for given joint.
 """
 def transformation(name_of_matrix, matrix, rows, columns, a, alpha, distance, theta):
   temp = 0.0
@@ -419,7 +408,7 @@ def transformation(name_of_matrix, matrix, rows, columns, a, alpha, distance, th
 """
 @function: multiply_matrices
 @description: Multiply the joints together to get end effector.
-@returns end effector.
+@return: end effector.
 """
 def multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw):
     # initialize temp matrices
@@ -452,7 +441,7 @@ def multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWri
 """
 @function: transformation_matrices
 @description: Pass a list of thetas for each joint to create our end effector
-@returns: a final transformation matrix (end effector)
+@return: a final transformation matrix (end effector)
 """
 def transformation_matrices(list_of_thetas):
   rows = 4
@@ -525,7 +514,7 @@ if __name__ == '__main__':
     #robo_vision()
 
     #debugging => get joint angles
-    joint_angles()
+    get_joint_angles()
 
     # run again?
     input = raw_input("\nWould you like to run this program again? (y or n)")
