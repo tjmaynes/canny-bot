@@ -129,6 +129,7 @@ def lookup_table(start, points):
 
   # TODO: get joint angles! Just get two for drawing a line
   # TODO: in stage 3, use bilinear interpolation for drawing exact shapes!
+  # http://stackoverflow.com/questions/18044485/how-to-write-lines-and-grid-on-image-in-python
   # traverse through matrix and add theta values based on measurements of space in "invisible" grid
   for i in range(rows):
     for j in range(columns):
@@ -163,6 +164,7 @@ def lookup_table(start, points):
       elif i == 2 and j == 4:
         grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 0:
+        # put angle here!
         grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 1:
         grid[i][j] = [1,2,1,2,1]
@@ -242,6 +244,7 @@ def robo_vision():
   contours,h = cv2.findContours(canny,1,2)
 
   # draw a specific shape
+  # http://docs.opencv.org/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html?highlight=findcontours#findcontours
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
     if len(approx)==2:
