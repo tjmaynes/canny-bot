@@ -122,11 +122,13 @@ containing the joint angles (theta values) to get to that position in
 NAO's workspace.
 @return: a table of joint angles
 """
-def lookup_table(start):#, canny, points):
+def lookup_table(start, points):
   rows = 5
   columns = 5
   grid = [[0 for x in range(rows)] for x in range(columns)]
 
+  # TODO: get joint angles! Just get two for drawing a line
+  # TODO: in stage 3, use bilinear interpolation for drawing exact shapes!
   # traverse through matrix and add theta values based on measurements of space in "invisible" grid
   for i in range(rows):
     for j in range(columns):
@@ -225,7 +227,6 @@ def robo_vision():
   # And do Canny edge detection
   canny = cv2.Canny(blur, 10, 100)
 
-  # uncomment area to see what the NAO "sees"
   # debugging -- write canny to file
   cv2.imwrite("debug/NAOVISION.png", canny)
 
@@ -240,26 +241,26 @@ def robo_vision():
   # contour detection
   contours,h = cv2.findContours(canny,1,2)
 
-  # only return value when you find a circle or square
+  # draw a specific shape
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
     if len(approx)==2:
-      robo_motion("line", canny, cnt)
+      robo_motion("line", cnt)
       break
     elif len(approx)==5:
-      robo_motion("pentagon", canny, cnt)
+      robo_motion("pentagon", cnt)
       break
     elif len(approx)==3:
-      robo_motion("triangle", canny, cnt)
+      robo_motion("triangle", cnt)
       break
     elif len(approx)==4:
-      robo_motion("square", canny, cnt)
+      robo_motion("square", cnt)
       break
     elif len(approx) == 9:
-      robo_motion("half-circle", canny, cnt)
+      robo_motion("half-circle", cnt)
       break
     elif len(approx) > 15:
-      robo_motion("circle", canny, cnt)
+      robo_motion("circle", cnt)
       break
 
   c = cv2.waitKey(50)
@@ -267,11 +268,10 @@ def robo_vision():
     exit(0)
 
 """
-
-Description: draws the shape seen by NAO.
-
+@function: robo_motion
+@description: draws the shape seen by NAO.
 """
-def robo_motion(shape_name, points, image):
+def robo_motion(shape_name, points):
   # NAO, what are we going to draw?
   voice.say("I will draw a " + shape_name);
   print "\nNAO Robot will draw this shape: " + shape_name + "."
@@ -297,8 +297,8 @@ def robo_motion(shape_name, points, image):
   #lets start at these coordinates
   start = [0,10,0,-1,0]
 
-  # create grid plus stage 3 setup
-  grid = lookup_table(points)# image, start)
+  # create grid with stage 3 setup
+  grid = lookup_table(start, points)
 
   # debug
   print grid[0][0]
@@ -466,6 +466,9 @@ def transformation_matrices(list_of_thetas):
 
   # bounds checking (to prevent overheating)
   #print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
+
+  # TODO: switch to radians
+  # http://doc.aldebaran.com/1-14/family/nao_h25/joints_h25.html#h25-joints
 
   if float(theta0) >= 119.5:
     theta0 = 110
