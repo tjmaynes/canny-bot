@@ -83,25 +83,30 @@ except Exception, e:
 """
 def get_joint_angles():
     # which coordinate location to record
-    input_value = raw_input("\Which coordinate?")
+    input_value = raw_input("\Which coordinate? ")
     print input_value
 
-    # posture
-    postureProxy.goToPosture("StandInit", 0.5)
+   # read input file
+    f = open('input.txt', 'a')
 
+    f.write("\n\nCoordinate: " + input_value)
+
+    # posture
+    #postureProxy.goToPosture("StandInit", 0.5)
+    
     #We use the "Body" name to signify the collection of all joints
-    pNames = "RArm"
+    pNames = "Body"
     pStiffnessLists = 0.0
     pTimeLists = 1.0
     motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
     # Example that finds the difference between the command and sensed angles.
-    names         = "RArm"
+    names       = "RArm"
     useSensors    = False
     commandAngles = motionProxy.getAngles(names, useSensors)
     print "Command angles:"
-    print str(commandAngles)
-    print ""
+    print str(commandAngles) + "\n"
+    f.write("\nCommandAngles:\n" + str(commandAngles))
 
     useSensors  = True
     sensorAngles = motionProxy.getAngles(names, useSensors)
@@ -109,11 +114,10 @@ def get_joint_angles():
     print str(sensorAngles)
     print ""
 
-    errors = []
-    for i in range(0, len(commandAngles)):
-        errors.append(commandAngles[i]-sensorAngles[i])
-    print "Errors"
-    print errors
+    f.write("\nSensor Angles:\n" + str(sensorAngles) )
+
+    # close input file
+    f.close()
 
 """
 @function: lookup_table
@@ -142,7 +146,7 @@ def lookup_table(start, points):
       elif i == 0 and j == 3:
         grid[i][j] = [1,2,1,2,1]
       elif i == 0 and j == 4:
-        grid[i][j] = [1,2,1,2,1]
+        grid[i][j] = [-0.0383080393075943, 0.04137603938579559, -0.08287796378135681, 0.533873975276947, 1.4526560306549072, 0.25200000405311584]
       elif i == 1 and j == 0:
         grid[i][j] = [1,2,1,2,1]
       elif i == 1 and j == 1:
@@ -164,7 +168,6 @@ def lookup_table(start, points):
       elif i == 2 and j == 4:
         grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 0:
-        # put angle here!
         grid[i][j] = [1,2,1,2,1]
       elif i == 3 and j == 1:
         grid[i][j] = [1,2,1,2,1]
@@ -280,57 +283,64 @@ def robo_motion(shape_name, points):
   print "\nNAO Robot will draw this shape: " + shape_name + "."
 
   # Send NAO to Pose Init
-  postureProxy.goToPosture("StandInit", 0.5)
+  #postureProxy.goToPosture("StandInit", 0.5)
 
   # Open nao right hand
-  motionProxy.openHand('RHand')
+  #motionProxy.openHand('RHand')
 
   # open hand for a few seconds
-  time.sleep(2)
+  #time.sleep(2)
 
   # grab marker
-  motionProxy.closeHand('RHand')
+  #motionProxy.closeHand('RHand')
 
   # say thank you for the pen Nao
-  voice.say("Thank you for the marker! Let's begin!")
+  #voice.say("Thank you for the marker! Let's begin!")
 
   # just sleep for 3 seconds
-  time.sleep(3)
+  #time.sleep(3)
 
   #lets start at these coordinates
-  start = [0,10,0,-1,0]
+  start = [0.18872396647930145, -0.09975196421146393, -0.03225596249103546, 1.5446163415908813, 1.3222661018371582, 0.25200000405311584]
+
+  end = [-1.6827560663223267, 0.024502038955688477, -0.6535259485244751, 0.05679996311664581, 0.7102000713348389, 0.6348000168800354]
 
   # create grid with stage 3 setup
   grid = lookup_table(start, points)
 
   # debug
   print grid[0][0]
-  print grid[3][0]
+  print grid[0][4]
 
   # We will be moving the left arm
+  motionProxy.setStiffnesses("RArm", 1.0)
   effector   = "RArm"
   space      = motion.SPACE_TORSO
   axisMask   = almath.AXIS_MASK_VEL
-  isAbsolute = False
+  isAbsolute = True
 
   # lets set our starting position
-  start_pos = transformation_matrices(grid[0][0])
+  start_pos = grid[0][0]
 
   # draw specific shapes
   if shape_name is "line":
-    path = [start_pos, transformation_matrices(grid[3][0]), start_pos]
-    times = [4.0]
+    # add more points!
+    path = [start_pos, grid[0][4]]
+    times = [2.0, 4.0]#[[1.0, 2.0, 3.0, 4.0, 5.0, 6.0],[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]]
   elif shape_name is "square":
-    path = [start_pos, transformation_matrices(grid[4][0]), transformation_matrices(grid[4,4]), transformation_matrics(grid[0][4]), start_pos]
-    times = [2.0, 4.0, 4.0, 4.0, 2.0]
+    path = [start_pos, grid[4][0], grid[4,4], grid[0][4]]
+    times = [2.0, 4.0, 4.0, 4.0]
   elif shape_name is "triangle":
-    path = [start_pos, transformation_matrics(grid[4][4]), transformation_matrics(grid[0][4]), start_pos]
-    times = [2.0, 4.0, 4.0, 2.0]
+    path = [start_pos, grid[4][4], grid[0][4]]
+    times = [2.0, 4.0, 4.0]
   else:
     print shape_name + " was not programmed to be drawn."
 
   # draw the shape!
-  motionProxy.transformInterpolation(effector, space, path, axisMask, times, isAbsolute)
+  motionProxy.positionInterpolation(effector, space, path, axisMask, times, isAbsolute)
+
+  # raise your hand!
+  motionProxy.positionInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
 
   voice.say("Here is your " + shape_name)
 
@@ -509,7 +519,9 @@ def transformation_matrices(list_of_thetas):
   pretty_print("RElbowRoll", RElbowRoll)
   RWristYaw = transformation("RWristYaw",RWristYaw,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
   pretty_print("RWristRoll", RWristRoll)
-  base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristYaw)
+  RHand = transformation("RHand",RHand,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
+  pretty_print("RWristRoll", RWristRoll)
+  base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristYaw,RHand)
   pretty_print("base_to_start", base_to_start)
 
   return base_to_start
@@ -518,18 +530,24 @@ if __name__ == '__main__':
   print("\nWelcome to the CannyBot Program!\n")
 
   while (True):
-    # have Nao Robot look at shapes!
-    #robo_vision()
-
-    #debugging => get joint angles
-    get_joint_angles()
+    # debug?
+    decision = raw_input("\nWould you like to debug? (y or n) ")
+    if decision == "n" or decision == "no" or decision == "0":
+      robo_vision()
+    else:
+      get_joint_angles()
 
     # run again?
-    input = raw_input("\nWould you like to run this program again? (y or n)")
+    input = raw_input("\nWould you like to run this program again? (y or n) ")
     if input == "n" or input == "no" or input == "0":
       break
     else:
-      robo_vision()
+      # debug?
+      decision = raw_input("\nWould you like to debug? (y or n) ")
+      if decision == "n" or decision == "no" or decision == "0":
+        robo_vision()
+      else:
+        get_joint_angles()
 
   # tron reference!
   voice.say("End of line.")
