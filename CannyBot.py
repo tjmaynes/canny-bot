@@ -93,7 +93,7 @@ def get_joint_angles():
 
     # posture
     #postureProxy.goToPosture("StandInit", 0.5)
-    
+
     #We use the "Body" name to signify the collection of all joints
     pNames = "Body"
     pStiffnessLists = 0.0
@@ -340,7 +340,7 @@ def robo_motion(shape_name, points):
   motionProxy.positionInterpolation(effector, space, path, axisMask, times, isAbsolute)
 
   # raise your hand!
-  motionProxy.positionInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
+  #motionProxy.positionInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
 
   voice.say("Here is your " + shape_name)
 
