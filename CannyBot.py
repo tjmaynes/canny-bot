@@ -87,7 +87,7 @@ def get_joint_angles():
     print input_value
 
    # read input file
-    f = open('input.txt', 'a')
+    f = open('debug/input.txt', 'a')
 
     f.write("\n\nCoordinate: " + input_value)
 
