@@ -54,7 +54,36 @@ def stiffness_off(proxy):
   pStiffnessLists = 0.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+def bilinear_interpolation(x, y, points):
+    '''
+    StackOverflow: http://stackoverflow.com/a/8662355
+    Interpolate (x,y) from values associated with four points.
 
+    The four points are a list of four triplets:  (x, y, value).
+    The four points can be in any order.  They should form a rectangle.
+
+        >>> bilinear_interpolation(12, 5.5,
+        ...                        [(10, 4, 100),
+        ...                         (20, 4, 200),
+        ...                         (10, 6, 150),
+        ...                         (20, 6, 300)])
+        165.0
+
+    '''
+
+    points = sorted(points)              # order points by x, then by y
+    (x1, y1, q11), (_x1, y2, q12), (x2, _y1, q21), (_x2, _y2, q22) = points
+
+    if x1 != _x1 or x2 != _x2 or y1 != _y1 or y2 != _y2:
+        raise ValueError('points do not form a rectangle')
+    if not x1 <= x <= x2 or not y1 <= y <= y2:
+        raise ValueError('(x, y) not within the rectangle')
+
+    return (q11 * (x2 - x) * (y2 - y) +
+            q21 * (x - x1) * (y2 - y) +
+            q12 * (x2 - x) * (y - y1) +
+            q22 * (x - x1) * (y - y1)
+           ) / ((x2 - x1) * (y2 - y1) + 0.0)
 """
 
 Connect to NAO Robot on startup
@@ -129,63 +158,71 @@ NAO's workspace.
 def lookup_table(start, points):
   rows = 5
   columns = 5
-  grid = [[0 for x in range(rows)] for x in range(columns)]
+  pixel_rows = 640
+  pixel_columns = 480
+  scale_x = pixel_rows/rows
+  scale_y = pixel_columns/columns
+
+  grid = [[0 for x in range(pixel_rows)] for x in range(pixel_columns)]
 
   # TODO: get joint angles! Just get two for drawing a line
   # TODO: in stage 3, use bilinear interpolation for drawing exact shapes!
   # http://stackoverflow.com/questions/18044485/how-to-write-lines-and-grid-on-image-in-python
   # traverse through matrix and add theta values based on measurements of space in "invisible" grid
-  for i in range(rows):
-    for j in range(columns):
-      if i == 0 and j == 0:
+
+  # do range check to send values to bilinear-interoplation
+
+  for i in range(pixel_rows):
+    for j in range(pixel_columns):
+      if i == 0 and j == 0*scale_y:
         grid[i][j] = start
-      elif i == 0 and j == 1:
+      elif i == 0*scale_x and j == 1*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 0 and j == 2:
+      elif i == 0*scale_x and j == 2*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 0 and j == 3:
+      elif i == 0*scale_x and j == 3*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 0 and j == 4:
+      elif i == 0*scale_x and j == 4*scale_y:
         grid[i][j] = [-0.0383080393075943, 0.04137603938579559, -0.08287796378135681, 0.533873975276947, 1.4526560306549072, 0.25200000405311584]
-      elif i == 1 and j == 0:
+      elif i == 1*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 1:
+      elif i == 1*scale_x and j == 1*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 2:
+      elif i == 1*scale_x and j == 2*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 3:
+      elif i == 1*scale_x and j == 3*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 1 and j == 4:
+      elif i == 1*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 0:
+      elif i == 2*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 1:
+      elif i == 2*scale_x and j == 1*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 2:
+      elif i == 2*scale_x and j == 2*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 3:
+      elif i == 2*scale_x and j == 3*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 2 and j == 4:
+      elif i == 2*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 0:
+      elif i == 3*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 1:
+      elif i == 3*scale_x and j == 1*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 2:
+      elif i == 3*scale_x and j == 2*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 3:
+      elif i == 3*scale_x and j == 3*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 3 and j == 4:
+      elif i == 3*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 4 and j == 0:
+      elif i == 4*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 4 and j == 1:
+      elif i == 4*scale_x and j == 1*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 4 and j == 2:
+      elif i == 4*scale_x and j == 2*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 4 and j == 3:
+      elif i == 4*scale_x and j == 3*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      elif i == 4 and j == 4:
+      elif i == 4*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
       else:
         break
@@ -248,6 +285,7 @@ def robo_vision():
 
   # draw a specific shape
   # http://docs.opencv.org/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html?highlight=findcontours#findcontours
+  # http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
     if len(approx)==2:
@@ -301,6 +339,7 @@ def robo_motion(shape_name, points):
   #time.sleep(3)
 
   #lets start at these coordinates
+  # these should be pixel values to map to
   start = [0.18872396647930145, -0.09975196421146393, -0.03225596249103546, 1.5446163415908813, 1.3222661018371582, 0.25200000405311584]
 
   end = [-1.6827560663223267, 0.024502038955688477, -0.6535259485244751, 0.05679996311664581, 0.7102000713348389, 0.6348000168800354]
@@ -321,6 +360,8 @@ def robo_motion(shape_name, points):
 
   # lets set our starting position
   start_pos = grid[0][0]
+
+  # build_path => based on specific cnt points
 
   # draw specific shapes
   if shape_name is "line":
