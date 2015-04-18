@@ -23,7 +23,7 @@ SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
 
 # nao settings
-ip = "169.254.226.148"
+ip = "169.254.43.193"
 port = 9559
 eyes = None
 video_proxy = None
@@ -45,7 +45,7 @@ def pretty_print(name, matrix):
 def stiffness_on(proxy):
   #We use the "Body" name to signify the collection of all joints
   pNames = "Body"
-  pStiffnessLists = 0.0
+  pStiffnessLists = 1.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 def stiffness_off(proxy):
@@ -54,6 +54,7 @@ def stiffness_off(proxy):
   pStiffnessLists = 0.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+
 def bilinear_interpolation(x, y, points):
     '''
     StackOverflow: http://stackoverflow.com/a/8662355
@@ -82,8 +83,7 @@ def bilinear_interpolation(x, y, points):
     return (q11 * (x2 - x) * (y2 - y) +
             q21 * (x - x1) * (y2 - y) +
             q12 * (x2 - x) * (y - y1) +
-            q22 * (x - x1) * (y - y1)
-           ) / ((x2 - x1) * (y2 - y1) + 0.0)
+            q22 * (x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1) + 0.0)
 """
 
 Connect to NAO Robot on startup
@@ -155,7 +155,7 @@ containing the joint angles (theta values) to get to that position in
 NAO's workspace.
 @return: a table of joint angles
 """
-def lookup_table(start, points):
+def lookup_table(points):
   rows = 5
   columns = 5
   pixel_rows = 640
@@ -163,19 +163,21 @@ def lookup_table(start, points):
   scale_x = pixel_rows/rows
   scale_y = pixel_columns/columns
 
-  grid = [[0 for x in range(pixel_rows)] for x in range(pixel_columns)]
+  stiffness_off(motionProxy)
 
-  # TODO: get joint angles! Just get two for drawing a line
+  grid = [[0 for x in range(pixel_columns+1)] for x in range(pixel_rows+1)]
+
+  # TODO: get 36 positions (6 thetas per position)! Just get two for drawing a line
   # TODO: in stage 3, use bilinear interpolation for drawing exact shapes!
   # http://stackoverflow.com/questions/18044485/how-to-write-lines-and-grid-on-image-in-python
   # traverse through matrix and add theta values based on measurements of space in "invisible" grid
 
   # do range check to send values to bilinear-interoplation
 
-  for i in range(pixel_rows):
-    for j in range(pixel_columns):
-      if i == 0 and j == 0*scale_y:
-        grid[i][j] = start
+  for i in range(0,pixel_rows+1):
+    for j in range(0,pixel_columns+1):
+      if i == 0*scale_x and j == 0*scale_y:
+        grid[i][j] = [1,2,2,3,1]
       elif i == 0*scale_x and j == 1*scale_y:
         grid[i][j] = [1,2,1,2,1]
       elif i == 0*scale_x and j == 2*scale_y:
@@ -184,6 +186,9 @@ def lookup_table(start, points):
         grid[i][j] = [1,2,1,2,1]
       elif i == 0*scale_x and j == 4*scale_y:
         grid[i][j] = [-0.0383080393075943, 0.04137603938579559, -0.08287796378135681, 0.533873975276947, 1.4526560306549072, 0.25200000405311584]
+      elif i == 0*scale_x and j == 5*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+
       elif i == 1*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
       elif i == 1*scale_x and j == 1*scale_y:
@@ -194,6 +199,9 @@ def lookup_table(start, points):
         grid[i][j] = [1,2,1,2,1]
       elif i == 1*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
+      elif i == 1*scale_x and j == 5*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+
       elif i == 2*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
       elif i == 2*scale_x and j == 1*scale_y:
@@ -204,6 +212,9 @@ def lookup_table(start, points):
         grid[i][j] = [1,2,1,2,1]
       elif i == 2*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
+      elif i == 2*scale_x and j == 5*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+
       elif i == 3*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
       elif i == 3*scale_x and j == 1*scale_y:
@@ -214,6 +225,9 @@ def lookup_table(start, points):
         grid[i][j] = [1,2,1,2,1]
       elif i == 3*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
+      elif i == 3*scale_x and j == 5*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+
       elif i == 4*scale_x and j == 0*scale_y:
         grid[i][j] = [1,2,1,2,1]
       elif i == 4*scale_x and j == 1*scale_y:
@@ -224,9 +238,48 @@ def lookup_table(start, points):
         grid[i][j] = [1,2,1,2,1]
       elif i == 4*scale_x and j == 4*scale_y:
         grid[i][j] = [1,2,1,2,1]
-      else:
-        break
-  return grid
+      elif i == 4*scale_x and j == 5*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+
+      elif i == 5*scale_x and j == 0*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 5*scale_x and j == 1*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 5*scale_x and j == 2*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 5*scale_x and j == 3*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 5*scale_x and j == 4*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+      elif i == 5*scale_x and j == 5*scale_y:
+        grid[i][j] = [1,2,1,2,1]
+
+  defined_grid_points = [[0,0], [128,0], [256,0], [384,0], [512,0], [640,0],
+                         [0,96], [128,96], [256,96], [384,96], [512,96], [640,96],
+                         [0,192], [128,192], [256,192], [384,192], [512,192], [640,192],
+                         [0,288], [128,288], [256,288], [384,288], [512,288], [640,288],
+                         [0,384], [128,384], [256,384], [384,384], [512,384], [640,384],
+                         [0,480], [128,480], [256,480], [384,480], [512,480], [640,480]]
+
+  print len(points[0])
+  print points[0][0]
+  print  points[0].item(0)
+  print heyl
+
+  # list of nearest neighbors to each point
+  nearest_neighbors = []
+
+  # compare the points found to the grid point
+  for i in range(0, pixel_rows+1):
+    for j in range(0, pixel_columns+1):
+      for k in range(len(grid)):
+        if points[[k][i]] <= defined_grid_points[i]:
+          nearest_neighbors = []
+
+  return path
+
+
+
 
 """
 @function: robot_vision
@@ -289,22 +342,22 @@ def robo_vision():
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
     if len(approx)==2:
-      robo_motion("line", cnt)
+      robo_motion("line", contours)
       break
     elif len(approx)==5:
-      robo_motion("pentagon", cnt)
+      robo_motion("pentagon", contours)
       break
     elif len(approx)==3:
-      robo_motion("triangle", cnt)
+      robo_motion("triangle", contours)
       break
     elif len(approx)==4:
-      robo_motion("square", cnt)
+      robo_motion("square", contours)
       break
     elif len(approx) == 9:
-      robo_motion("half-circle", cnt)
+      robo_motion("half-circle", contours)
       break
     elif len(approx) > 15:
-      robo_motion("circle", cnt)
+      robo_motion("circle", contours)
       break
 
   c = cv2.waitKey(50)
@@ -317,7 +370,7 @@ def robo_vision():
 """
 def robo_motion(shape_name, points):
   # NAO, what are we going to draw?
-  voice.say("I will draw a " + shape_name);
+  #voice.say("I will draw a " + shape_name);
   print "\nNAO Robot will draw this shape: " + shape_name + "."
 
   # Send NAO to Pose Init
@@ -338,44 +391,17 @@ def robo_motion(shape_name, points):
   # just sleep for 3 seconds
   #time.sleep(3)
 
-  #lets start at these coordinates
-  # these should be pixel values to map to
-  start = [0.18872396647930145, -0.09975196421146393, -0.03225596249103546, 1.5446163415908813, 1.3222661018371582, 0.25200000405311584]
-
-  end = [-1.6827560663223267, 0.024502038955688477, -0.6535259485244751, 0.05679996311664581, 0.7102000713348389, 0.6348000168800354]
-
-  # create grid with stage 3 setup
-  grid = lookup_table(start, points)
-
-  # debug
-  print grid[0][0]
-  print grid[0][4]
-
   # We will be moving the left arm
-  motionProxy.setStiffnesses("RArm", 1.0)
+  motionProxy.setStiffnesses("RArm", 0.0)
   effector   = "RArm"
   space      = motion.SPACE_TORSO
   axisMask   = almath.AXIS_MASK_VEL
   isAbsolute = True
 
-  # lets set our starting position
-  start_pos = grid[0][0]
+  # create grid with stage 3 setup
+  path = lookup_table(points)
 
-  # build_path => based on specific cnt points
-
-  # draw specific shapes
-  if shape_name is "line":
-    # add more points!
-    path = [start_pos, grid[0][4]]
-    times = [2.0, 4.0]#[[1.0, 2.0, 3.0, 4.0, 5.0, 6.0],[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]]
-  elif shape_name is "square":
-    path = [start_pos, grid[4][0], grid[4,4], grid[0][4]]
-    times = [2.0, 4.0, 4.0, 4.0]
-  elif shape_name is "triangle":
-    path = [start_pos, grid[4][4], grid[0][4]]
-    times = [2.0, 4.0, 4.0]
-  else:
-    print shape_name + " was not programmed to be drawn."
+  times = get_times(path)
 
   # draw the shape!
   motionProxy.positionInterpolation(effector, space, path, axisMask, times, isAbsolute)
