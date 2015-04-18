@@ -23,7 +23,7 @@ SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
 
 # nao settings
-ip = "169.254.43.193"
+ip = "169.254.226.148"
 port = 9559
 eyes = None
 video_proxy = None
@@ -55,35 +55,6 @@ def stiffness_off(proxy):
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
-def bilinear_interpolation(x, y, points):
-    '''
-    StackOverflow: http://stackoverflow.com/a/8662355
-    Interpolate (x,y) from values associated with four points.
-
-    The four points are a list of four triplets:  (x, y, value).
-    The four points can be in any order.  They should form a rectangle.
-
-        >>> bilinear_interpolation(12, 5.5,
-        ...                        [(10, 4, 100),
-        ...                         (20, 4, 200),
-        ...                         (10, 6, 150),
-        ...                         (20, 6, 300)])
-        165.0
-
-    '''
-
-    points = sorted(points)              # order points by x, then by y
-    (x1, y1, q11), (_x1, y2, q12), (x2, _y1, q21), (_x2, _y2, q22) = points
-
-    if x1 != _x1 or x2 != _x2 or y1 != _y1 or y2 != _y2:
-        raise ValueError('points do not form a rectangle')
-    if not x1 <= x <= x2 or not y1 <= y <= y2:
-        raise ValueError('(x, y) not within the rectangle')
-
-    return (q11 * (x2 - x) * (y2 - y) +
-            q21 * (x - x1) * (y2 - y) +
-            q12 * (x2 - x) * (y - y1) +
-            q22 * (x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1) + 0.0)
 """
 
 Connect to NAO Robot on startup
@@ -124,7 +95,7 @@ def get_joint_angles():
     #postureProxy.goToPosture("StandInit", 0.5)
 
     #We use the "Body" name to signify the collection of all joints
-    pNames = "Body"
+    pNames = "RArm"
     pStiffnessLists = 0.0
     pTimeLists = 1.0
     motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
@@ -148,6 +119,10 @@ def get_joint_angles():
     # close input file
     f.close()
 
+def bilinear_interpolation(x, y, grid):
+  print grid[0]
+  #return (grid[0]*(1 - x)*(1 - y)) + (grid[1]*x*(1-y)) + (grid[2]*(1-x)*y) + (grid[3]*x*y)
+
 """
 @function: lookup_table
 @description: create lookup table of size 5 by 5 with each coordinate
@@ -156,14 +131,10 @@ NAO's workspace.
 @return: a table of joint angles
 """
 def lookup_table(points):
-  rows = 5
-  columns = 5
   pixel_rows = 640
   pixel_columns = 480
-  scale_x = pixel_rows/rows
-  scale_y = pixel_columns/columns
 
-  stiffness_off(motionProxy)
+  #stiffness_on(motionProxy)
 
   grid = [[0 for x in range(pixel_columns+1)] for x in range(pixel_rows+1)]
 
@@ -176,110 +147,38 @@ def lookup_table(points):
 
   for i in range(0,pixel_rows+1):
     for j in range(0,pixel_columns+1):
-      if i == 0*scale_x and j == 0*scale_y:
-        grid[i][j] = [1,2,2,3,1]
-      elif i == 0*scale_x and j == 1*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 0*scale_x and j == 2*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 0*scale_x and j == 3*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 0*scale_x and j == 4*scale_y:
-        grid[i][j] = [-0.0383080393075943, 0.04137603938579559, -0.08287796378135681, 0.533873975276947, 1.4526560306549072, 0.25200000405311584]
-      elif i == 0*scale_x and j == 5*scale_y:
-        grid[i][j] = [1,2,1,2,1]
+      if i == 0 and j == 0:
+        grid[i][j] = [0.5200679898262024, 0.3141592741012573, 0.5982180833816528, 0.6611959934234619, 0.621228039264679, 0.7531999945640564]
+      elif i == 640 and j == 0:
+        grid[i][j] = [0.7256239652633667, -0.1871899664402008, 0.7746280431747437, 1.0339579582214355, 0.7071320414543152, 0.7531999945640564]
+      elif i == 0 and j == 480:
+        grid[i][j] = [0.8038579821586609, 0.2668740451335907, 0.32670003175735474, 1.2671259641647339, 0.4463520646095276, 0.7547999620437622]
+      elif i == 640 and j == 480:
+        grid[i][j] = [0.8836259841918945, -0.44029998779296875, 0.5706060528755188, 1.5446163415908813, 0.8298520445823669, 0.753600001335144]
 
-      elif i == 1*scale_x and j == 0*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1*scale_x and j == 1*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1*scale_x and j == 2*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1*scale_x and j == 3*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1*scale_x and j == 4*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 1*scale_x and j == 5*scale_y:
-        grid[i][j] = [1,2,1,2,1]
+  defined_grid_points = [[0,0],[640,0],[0,480],[640,480]]
 
-      elif i == 2*scale_x and j == 0*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2*scale_x and j == 1*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2*scale_x and j == 2*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2*scale_x and j == 3*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2*scale_x and j == 4*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 2*scale_x and j == 5*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-
-      elif i == 3*scale_x and j == 0*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3*scale_x and j == 1*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3*scale_x and j == 2*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3*scale_x and j == 3*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3*scale_x and j == 4*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 3*scale_x and j == 5*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-
-      elif i == 4*scale_x and j == 0*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 4*scale_x and j == 1*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 4*scale_x and j == 2*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 4*scale_x and j == 3*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 4*scale_x and j == 4*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 4*scale_x and j == 5*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-
-      elif i == 5*scale_x and j == 0*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 5*scale_x and j == 1*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 5*scale_x and j == 2*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 5*scale_x and j == 3*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 5*scale_x and j == 4*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-      elif i == 5*scale_x and j == 5*scale_y:
-        grid[i][j] = [1,2,1,2,1]
-
-  defined_grid_points = [[0,0], [128,0], [256,0], [384,0], [512,0], [640,0],
-                         [0,96], [128,96], [256,96], [384,96], [512,96], [640,96],
-                         [0,192], [128,192], [256,192], [384,192], [512,192], [640,192],
-                         [0,288], [128,288], [256,288], [384,288], [512,288], [640,288],
-                         [0,384], [128,384], [256,384], [384,384], [512,384], [640,384],
-                         [0,480], [128,480], [256,480], [384,480], [512,480], [640,480]]
-
-  print len(points[0])
+  """
+  # print out all the points
+  for j in range(len(points)):
+    for k in range(len(points[j])):
+      #for i in range(len(defined_grid_points)):
+      print "(" + str(points[j][k].item(0)) +  ", " + str(points[j][k].item(1)) + ")"
+  """
+  path = []
   print points[0][0]
-  print  points[0].item(0)
-  print heyl
+  print points[0].item(0)
+  print defined_grid_points
+  print defined_grid_points[0]
 
-  # list of nearest neighbors to each point
-  nearest_neighbors = []
+  bilinear_interpolation(points[0][0].item(0), points[0][0].item(1), defined_grid_points)
 
-  # compare the points found to the grid point
-  for i in range(0, pixel_rows+1):
-    for j in range(0, pixel_columns+1):
-      for k in range(len(grid)):
-        if points[[k][i]] <= defined_grid_points[i]:
-          nearest_neighbors = []
+  for j in range(len(points)):
+    for k in range(len(points[j])):
+      #print(bilinear_interpolation(points[j][k].item(0), points[j][k].item(1), defined_grid_points))
+      break
 
   return path
-
-
-
 
 """
 @function: robot_vision
