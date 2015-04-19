@@ -43,17 +43,54 @@ def pretty_print(name, matrix):
   for row in matrix:
     print row
 def stiffness_on(proxy):
-  #We use the "Body" name to signify the collection of all joints
   pNames = "Body"
   pStiffnessLists = 1.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 def stiffness_off(proxy):
-  #We use the "Body" name to signify the collection of all joints
   pNames = "Body"
   pStiffnessLists = 0.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+def bilinear_interpolation(x, y, values):
+  # sort values first!
+  values = sorted(values)
+
+  # get x and y values from values
+  x1  = values[0][0]
+  y1  = values[0][1]
+  _x1 = values[1][0]
+  y2  = values[1][1]
+  x2  = values[2][0]
+  _y1 = values[2][1]
+  _x2 = values[3][0]
+  _y2 = values[3][1]
+
+  # check that the values form a rectangle
+  if x1 != _x1 or x2 != _x2 or y1 != _y1 or y2 != _y2:
+    raise ValueError('points do not form a rectangle')
+  if not x1 <= x <= x2 or not y1 <= y <= y2:
+    raise ValueError('(x, y) not within the rectangle')
+
+  # get joint angles from each defined corner point
+  q11 = points[0][2]
+  q12 = points[1][2]
+  q21 = points[2][2]
+  q22 = points[3][2]
+
+  # calculations
+  temp1 = [i * (x2 - x) * (y2 - y) for i in q11]
+  temp2 = [i * (x - x1) * (y2 - y) for i in q21]
+  temp3 = [i * (x2 - x) * (y - y1) for i in q12]
+  temp4 = [i * (x - x1) * (y - y1) for i in q22]
+  add12 = [x + y for x,y in zip(temp1, temp2)]
+  add34 = [x + y for x,y in zip(temp3, temp4)]
+  final_add = [x + y for x,y in zip(add12, add34)]
+  temp = ((x2 - x1) * (y2 - y1) + 0.0)
+  final_temp = [i / temp for i in final_add]
+
+  # return final calculation
+  return final_temp
 
 """
 
@@ -82,7 +119,7 @@ except Exception, e:
 @return: a list of joint angles =>  [rshoulderpitch, rshoulderroll, relbowyaw, rwristyaw, rhand]
 """
 def get_joint_angles():
-    # which coordinate location to record
+  # which coordinate location to record
     input_value = raw_input("\Which coordinate? ")
     print input_value
 
@@ -119,10 +156,6 @@ def get_joint_angles():
     # close input file
     f.close()
 
-def bilinear_interpolation(x, y, grid):
-  print grid[0]
-  #return (grid[0]*(1 - x)*(1 - y)) + (grid[1]*x*(1-y)) + (grid[2]*(1-x)*y) + (grid[3]*x*y)
-
 """
 @function: lookup_table
 @description: create lookup table of size 5 by 5 with each coordinate
@@ -138,13 +171,6 @@ def lookup_table(points):
 
   grid = [[0 for x in range(pixel_columns+1)] for x in range(pixel_rows+1)]
 
-  # TODO: get 36 positions (6 thetas per position)! Just get two for drawing a line
-  # TODO: in stage 3, use bilinear interpolation for drawing exact shapes!
-  # http://stackoverflow.com/questions/18044485/how-to-write-lines-and-grid-on-image-in-python
-  # traverse through matrix and add theta values based on measurements of space in "invisible" grid
-
-  # do range check to send values to bilinear-interoplation
-
   for i in range(0,pixel_rows+1):
     for j in range(0,pixel_columns+1):
       if i == 0 and j == 0:
@@ -156,27 +182,18 @@ def lookup_table(points):
       elif i == 640 and j == 480:
         grid[i][j] = [0.8836259841918945, -0.44029998779296875, 0.5706060528755188, 1.5446163415908813, 0.8298520445823669, 0.753600001335144]
 
-  defined_grid_points = [[0,0],[640,0],[0,480],[640,480]]
+  defined_grid_points = [[0, 0, grid[0][0]],
+                         [640, 0, grid[640][0]],
+                         [0, 480, grid[0][480]],
+                         [640, 480, grid[640][480]]]
 
-  """
-  # print out all the points
-  for j in range(len(points)):
-    for k in range(len(points[j])):
-      #for i in range(len(defined_grid_points)):
-      print "(" + str(points[j][k].item(0)) +  ", " + str(points[j][k].item(1)) + ")"
-  """
   path = []
-  print points[0][0]
-  print points[0].item(0)
-  print defined_grid_points
-  print defined_grid_points[0]
 
-  bilinear_interpolation(points[0][0].item(0), points[0][0].item(1), defined_grid_points)
-
-  for j in range(len(points)):
-    for k in range(len(points[j])):
-      #print(bilinear_interpolation(points[j][k].item(0), points[j][k].item(1), defined_grid_points))
-      break
+  # perform bilinear interpolation on all the points
+  # to get theta values of each point
+  for i in range(len(points)):
+    for j in range(len(points[j])):
+      path.append(bilinear_interpolation(points[i][j].item(0), points[i][j].item(1), defined_grid_points))
 
   return path
 
@@ -322,68 +339,68 @@ def transformation(name_of_matrix, matrix, rows, columns, a, alpha, distance, th
       if i == 0 and j == 0:
         temp = math.cos(theta*math.pi/180.0)
         if temp == -0:
-         temp = 0.0
-        matrix[i][j] = round(temp)
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 0 and j == 1:
-         temp = (-(math.sin(theta*math.pi/180.0))*math.cos(alpha*math.pi/180.0))
+        temp = (-(math.sin(theta*math.pi/180.0))*math.cos(alpha*math.pi/180.0))
          if temp == -0:
            temp = 0.0
-         matrix[i][j] = round(temp)
+           matrix[i][j] = round(temp)
       elif i == 0 and j == 2:
-         temp = (math.sin(theta*math.pi/ 180.0) * math.sin(alpha*math.pi/ 180.0))
+        temp = (math.sin(theta*math.pi/ 180.0) * math.sin(alpha*math.pi/ 180.0))
          if temp == -0:
            temp = 0.0
-         matrix[i][j] = round(temp)
+           matrix[i][j] = round(temp)
       elif i == 0 and j == 3:
-         temp = (a * math.cos(theta*math.pi/180.0))
+        temp = (a * math.cos(theta*math.pi/180.0))
          if temp == -0:
            temp = 0.0
-         matrix[i][j] = round(temp)
+           matrix[i][j] = round(temp)
       elif i == 1 and j == 0:
-         temp = math.sin(theta*math.pi/180.0)
+        temp = math.sin(theta*math.pi/180.0)
          if temp == -0:
            temp = 0.0
-         matrix[i][j] = round(temp)
+           matrix[i][j] = round(temp)
       elif i == 1 and j == 1:
-         temp = (math.cos(theta*math.pi/180.0)*math.cos(alpha*math.pi/180.0))
+        temp = (math.cos(theta*math.pi/180.0)*math.cos(alpha*math.pi/180.0))
          if temp == -0:
            temp = 0.0
-         matrix[i][j] = round(temp)
+           matrix[i][j] = round(temp)
       elif i == 1 and j == 2:
-         temp = (-(math.cos(theta*math.pi/180.0))*math.sin(alpha*math.pi/180.0))
+        temp = (-(math.cos(theta*math.pi/180.0))*math.sin(alpha*math.pi/180.0))
          if temp == -0:
            temp = 0.0
-         matrix[i][j] = round(temp)
+           matrix[i][j] = round(temp)
       elif i == 1 and j == 3:
-         temp = a*math.sin(theta*math.pi/180.0)
+        temp = a*math.sin(theta*math.pi/180.0)
          if temp == -0:
            temp = 0.0
-         matrix[i][j] = round(temp)
+           matrix[i][j] = round(temp)
       elif i == 2 and j == 0:
-         matrix[i][j] = 0.0
+        matrix[i][j] = 0.0
       elif i == 2 and j == 1:
-         temp = math.sin(alpha * math.pi/180.0)
+        temp = math.sin(alpha * math.pi/180.0)
          if temp == -0:
-            temp = 0.0
-         matrix[i][j] = round(temp)
+           temp = 0.0
+           matrix[i][j] = round(temp)
       elif i == 2 and j == 2:
-         temp = math.cos(alpha * math.pi/180.0)
+        temp = math.cos(alpha * math.pi/180.0)
          if temp == -0:
-            temp = 0.0
-         matrix[i][j] = round(temp)
+           temp = 0.0
+           matrix[i][j] = round(temp)
       elif i == 2 and j == 3:
-         temp = distance
+        temp = distance
          if temp == -0:
-            temp = 0.0
-         matrix[i][j] = round(temp)
+           temp = 0.0
+           matrix[i][j] = round(temp)
       elif i == 3 and j == 0:
-         matrix[i][j] = 0.0
+        matrix[i][j] = 0.0
       elif i == 3 and j == 1:
-         matrix[i][j] = 0.0
+        matrix[i][j] = 0.0
       elif i == 3 and j == 2:
-         matrix[i][j] = 0.0
+        matrix[i][j] = 0.0
       elif i == 3 and j == 3:
-         matrix[i][j] = 1.0
+        matrix[i][j] = 1.0
   return matrix
 
 """
@@ -392,7 +409,7 @@ def transformation(name_of_matrix, matrix, rows, columns, a, alpha, distance, th
 @return: end effector.
 """
 def multiply_matrices(RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRoll, RWristYaw):
-    # initialize temp matrices
+  # initialize temp matrices
     m0 = [[0 for x in range(4)] for x in range(4)]
     m1 = [[0 for x in range(4)] for x in range(4)]
     m2 = [[0 for x in range(4)] for x in range(4)]
