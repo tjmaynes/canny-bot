@@ -1,7 +1,7 @@
 """
 @file: CannyBot.py
 @authors: Tommy Lin, TJ Maynes
-@subject: getting the NAO Robot to draw the shapes it "sees" using image processing
+@subject: getting the NAO Robot to draw the shapes it "sees" using image processing.
 """
 
 import os, sys, math, motion, almath, time
@@ -42,16 +42,23 @@ def pretty_print(name, matrix):
   print "\nThis is matrix = " + name
   for row in matrix:
     print row
+
 def stiffness_on(proxy):
   pNames = "Body"
   pStiffnessLists = 1.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+
 def stiffness_off(proxy):
   pNames = "Body"
   pStiffnessLists = 0.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+
+"""
+@function: bilinear_interpolation
+@description: http://en.wikipedia.org/wiki/Bilinear_interpolation
+"""
 def bilinear_interpolation(x, y, values):
   # sort values first!
   values = sorted(values)
@@ -93,6 +100,48 @@ def bilinear_interpolation(x, y, values):
   return final_temp
 
 """
+@function: get_times
+@description: manually add in a time for each set of theta values per point (lots of points)
+"""
+def get_times(path):
+  for i in range(len(path)):
+    print "hello"
+
+"""
+@function: get_joint_angles()
+@description: manually get joint angles within NAO's workspace
+@return: a list of joint angles =>  [rshoulderpitch, rshoulderroll, relbowyaw, rwristyaw, rhand]
+"""
+def get_joint_angles():
+  # which coordinate location to record
+  input_value = raw_input("\Which coordinate? ")
+
+   # read input file
+   f = open('debug/input.txt', 'a')
+   f.write("\n\nCoordinate: " + input_value)
+
+   #We use the "Body" name to signify the collection of all joints
+   pNames = "RArm"
+   pStiffnessLists = 0.0
+   pTimeLists = 1.0
+   motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+
+   # Example that finds the difference between the command and sensed angles.
+   names       = "RArm"
+   useSensors    = False
+   commandAngles = motionProxy.getAngles(names, useSensors)
+
+   f.write("\Command Angles:\n" + str(commandAngles) )
+
+   useSensors  = True
+   sensorAngles = motionProxy.getAngles(names, useSensors)
+
+   f.write("\nSensor Angles:\n" + str(sensorAngles) )
+
+   # close input file
+   f.close()
+
+"""
 
 Connect to NAO Robot on startup
 
@@ -114,49 +163,6 @@ except Exception, e:
   print "Error was: ", e
 
 """
-@function: get_joint_angles()
-@description: manually get joint angles within NAO's workspace
-@return: a list of joint angles =>  [rshoulderpitch, rshoulderroll, relbowyaw, rwristyaw, rhand]
-"""
-def get_joint_angles():
-  # which coordinate location to record
-    input_value = raw_input("\Which coordinate? ")
-    print input_value
-
-   # read input file
-    f = open('debug/input.txt', 'a')
-
-    f.write("\n\nCoordinate: " + input_value)
-
-    # posture
-    #postureProxy.goToPosture("StandInit", 0.5)
-
-    #We use the "Body" name to signify the collection of all joints
-    pNames = "RArm"
-    pStiffnessLists = 0.0
-    pTimeLists = 1.0
-    motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
-
-    # Example that finds the difference between the command and sensed angles.
-    names       = "RArm"
-    useSensors    = False
-    commandAngles = motionProxy.getAngles(names, useSensors)
-    print "Command angles:"
-    print str(commandAngles) + "\n"
-    f.write("\nCommandAngles:\n" + str(commandAngles))
-
-    useSensors  = True
-    sensorAngles = motionProxy.getAngles(names, useSensors)
-    print "Sensor angles:"
-    print str(sensorAngles)
-    print ""
-
-    f.write("\nSensor Angles:\n" + str(sensorAngles) )
-
-    # close input file
-    f.close()
-
-"""
 @function: lookup_table
 @description: create lookup table of size 5 by 5 with each coordinate
 containing the joint angles (theta values) to get to that position in
@@ -166,9 +172,6 @@ NAO's workspace.
 def lookup_table(points):
   pixel_rows = 640
   pixel_columns = 480
-
-  #stiffness_on(motionProxy)
-
   grid = [[0 for x in range(pixel_columns+1)] for x in range(pixel_rows+1)]
 
   for i in range(0,pixel_rows+1):
@@ -194,6 +197,8 @@ def lookup_table(points):
   for i in range(len(points)):
     for j in range(len(points[j])):
       path.append(bilinear_interpolation(points[i][j].item(0), points[i][j].item(1), defined_grid_points))
+
+  print path
 
   return path
 
@@ -461,10 +466,7 @@ def transformation_matrices(list_of_thetas):
   base_to_start = [[0 for x in range(rows)] for x in range(columns)]
 
   # bounds checking (to prevent overheating)
-  #print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
-
-  # TODO: switch to radians
-  # http://doc.aldebaran.com/1-14/family/nao_h25/joints_h25.html#h25-joints
+  print "(Before check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
   if float(theta0) >= 119.5:
     theta0 = 110
@@ -489,22 +491,24 @@ def transformation_matrices(list_of_thetas):
   else:
     print "no issues!"
 
-  #print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
+  print "\n(After check): Thetas are %d, %d, %d, %d, %d" % (float(theta0), float(theta1), float(theta2), float(theta3), float(theta4))
 
   # transformation matrices
   RShoulderPitch = transformation("RShoulderPitch",RShoulderPitch,rows,columns,0,-(math.pi/2.0), 0, float(theta0))
-  pretty_print("RShoulderPitch", RShoulderPitch)
   RShoulderRoll = transformation("RShoulderRoll",RShoulderRoll,rows,columns,0,math.pi/2.0, 0, float(theta1) + (math.pi/2.0))
-  pretty_print("RShoulderRoll", RShoulderRoll)
   RElbowYaw = transformation("RElbowYaw",RElbowYaw,rows,columns,-ELBOW_OFFSET_Y, (math.pi / 2.0), UPPER_ARM_LENGTH, float(theta2))
-  pretty_print("RElbowYaw", RElbowYaw)
   RElbowRoll = transformation("RElbowRoll",RElbowRoll,rows,columns,0, -(math.pi / 2.0), 0, float(theta3))
-  pretty_print("RElbowRoll", RElbowRoll)
   RWristYaw = transformation("RWristYaw",RWristYaw,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
-  pretty_print("RWristRoll", RWristRoll)
   RHand = transformation("RHand",RHand,rows,columns,LOWER_ARM_LENGTH, (math.pi/ 2.0), 0, float(theta4))
-  pretty_print("RWristRoll", RWristRoll)
   base_to_start = multiply_matrices(RShoulderPitch,RShoulderRoll,RElbowYaw,RElbowRoll,RWristYaw,RHand)
+
+  # pretty print each transformation
+  pretty_print("RShoulderPitch", RShoulderPitch)
+  pretty_print("RShoulderRoll", RShoulderRoll)
+  pretty_print("RElbowYaw", RElbowYaw)
+  pretty_print("RElbowRoll", RElbowRoll)
+  pretty_print("RWristRoll", RWristRoll)
+  pretty_print("RWristRoll", RWristRoll)
   pretty_print("base_to_start", base_to_start)
 
   return base_to_start
@@ -512,25 +516,12 @@ def transformation_matrices(list_of_thetas):
 if __name__ == '__main__':
   print("\nWelcome to the CannyBot Program!\n")
 
-  while (True):
-    # debug?
-    decision = raw_input("\nWould you like to debug? (y or n) ")
-    if decision == "n" or decision == "no" or decision == "0":
-      robo_vision()
-    else:
-      get_joint_angles()
-
-    # run again?
-    input = raw_input("\nWould you like to run this program again? (y or n) ")
-    if input == "n" or input == "no" or input == "0":
-      break
-    else:
-      # debug?
-      decision = raw_input("\nWould you like to debug? (y or n) ")
-      if decision == "n" or decision == "no" or decision == "0":
-        robo_vision()
-      else:
-        get_joint_angles()
+  # debug?
+  decision = raw_input("\nWould you like to debug? (y or n) ")
+  if decision == "n" or decision == "no" or decision == "0":
+    robo_vision()
+  else:
+    get_joint_angles()
 
   # tron reference!
   voice.say("End of line.")
