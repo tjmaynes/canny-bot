@@ -72,7 +72,7 @@ def bilinear_interpolation(x, y, values):
   if not x1 <= x <= x2 or not y1 <= y <= y2:
     raise ValueError('(x, y) not within the rectangle')
 
-  # get joint angles from each defined corner point
+  # get joint angles from each defined defined
   q11 = points[0][2]
   q12 = points[1][2]
   q21 = points[2][2]
