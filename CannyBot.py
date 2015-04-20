@@ -238,9 +238,9 @@ def robo_vision():
   # Save the image.
   im.save("debug/noognagnook.png")
 
+  # get rid of pink garbage for final canny
   w, h = im.size
   im.crop((0, 10, w, h-10)).save("debug/test.png")
-
 
   # use opencv to read from image
   frame = cv2.imread("debug/test.png")
