@@ -5,6 +5,7 @@
 """
 
 import os, sys, math, motion, almath, time
+import numpy as np
 from StringIO import StringIO
 from PIL import Image
 import cv2
@@ -23,7 +24,7 @@ SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
 
 # nao settings
-ip = "169.254.226.148"
+ip = "169.254.242.79"
 port = 9559
 eyes = None
 video_proxy = None
@@ -80,10 +81,10 @@ def bilinear_interpolation(x, y, values):
     raise ValueError('(x, y) not within the rectangle')
 
   # get joint angles from each defined defined
-  q11 = points[0][2]
-  q12 = points[1][2]
-  q21 = points[2][2]
-  q22 = points[3][2]
+  q11 = values[0][2]
+  q12 = values[1][2]
+  q21 = values[2][2]
+  q22 = values[3][2]
 
   # calculations
   temp1 = [i * (x2 - x) * (y2 - y) for i in q11]
@@ -104,8 +105,13 @@ def bilinear_interpolation(x, y, values):
 @description: manually add in a time for each set of theta values per point (lots of points)
 """
 def get_times(path):
+  times = []
+  print len(path)
+  print path[0]
   for i in range(len(path)):
-    print "hello"
+    times.append([1.0,2.0,3.0,4.0,5.0,6.0])
+
+  return times
 
 """
 @function: get_joint_angles()
@@ -116,30 +122,30 @@ def get_joint_angles():
   # which coordinate location to record
   input_value = raw_input("\Which coordinate? ")
 
-   # read input file
-   f = open('debug/input.txt', 'a')
-   f.write("\n\nCoordinate: " + input_value)
+  # read input file
+  f = open('debug/input.txt', 'a')
+  f.write("\n\nCoordinate: " + input_value)
+  
+  #We use the "Body" name to signify the collection of all joints
+  pNames = "RArm"
+  pStiffnessLists = 0.0
+  pTimeLists = 1.0
+  motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
-   #We use the "Body" name to signify the collection of all joints
-   pNames = "RArm"
-   pStiffnessLists = 0.0
-   pTimeLists = 1.0
-   motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+  # Example that finds the difference between the command and sensed angles.
+  names       = "RArm"
+  useSensors    = False
+  commandAngles = motionProxy.getAngles(names, useSensors)
 
-   # Example that finds the difference between the command and sensed angles.
-   names       = "RArm"
-   useSensors    = False
-   commandAngles = motionProxy.getAngles(names, useSensors)
+  f.write("\Command Angles:\n" + str(commandAngles) )
 
-   f.write("\Command Angles:\n" + str(commandAngles) )
+  useSensors  = True
+  sensorAngles = motionProxy.getAngles(names, useSensors)
 
-   useSensors  = True
-   sensorAngles = motionProxy.getAngles(names, useSensors)
+  f.write("\nSensor Angles:\n" + str(sensorAngles) )
 
-   f.write("\nSensor Angles:\n" + str(sensorAngles) )
-
-   # close input file
-   f.close()
+  # close input file
+  f.close()
 
 """
 
@@ -171,7 +177,7 @@ NAO's workspace.
 """
 def lookup_table(points):
   pixel_rows = 640
-  pixel_columns = 480
+  pixel_columns = 460
   grid = [[0 for x in range(pixel_columns+1)] for x in range(pixel_rows+1)]
 
   for i in range(0,pixel_rows+1):
@@ -180,25 +186,26 @@ def lookup_table(points):
         grid[i][j] = [0.5200679898262024, 0.3141592741012573, 0.5982180833816528, 0.6611959934234619, 0.621228039264679, 0.7531999945640564]
       elif i == 640 and j == 0:
         grid[i][j] = [0.7256239652633667, -0.1871899664402008, 0.7746280431747437, 1.0339579582214355, 0.7071320414543152, 0.7531999945640564]
-      elif i == 0 and j == 480:
+      elif i == 0 and j == 460:
         grid[i][j] = [0.8038579821586609, 0.2668740451335907, 0.32670003175735474, 1.2671259641647339, 0.4463520646095276, 0.7547999620437622]
-      elif i == 640 and j == 480:
+      elif i == 640 and j == 460:
         grid[i][j] = [0.8836259841918945, -0.44029998779296875, 0.5706060528755188, 1.5446163415908813, 0.8298520445823669, 0.753600001335144]
 
   defined_grid_points = [[0, 0, grid[0][0]],
                          [640, 0, grid[640][0]],
-                         [0, 480, grid[0][480]],
-                         [640, 480, grid[640][480]]]
+                         [0, 460, grid[0][460]],
+                         [640, 460, grid[640][460]]]
+
+  print points
+  print points[0][0].item(0)
 
   path = []
 
   # perform bilinear interpolation on all the points
   # to get theta values of each point
   for i in range(len(points)):
-    for j in range(len(points[j])):
+    for j in range(len(points[i])):
       path.append(bilinear_interpolation(points[i][j].item(0), points[i][j].item(1), defined_grid_points))
-
-  print path
 
   return path
 
@@ -231,8 +238,14 @@ def robo_vision():
   # Save the image.
   im.save("debug/noognagnook.png")
 
+  w, h = im.size
+  im.crop((0, 10, w, h-10)).save("debug/test.png")
+
+
   # use opencv to read from image
-  frame = cv2.imread("debug/noognagnook.png")
+  frame = cv2.imread("debug/test.png")
+
+  normal = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
   # Convert to greyscale
   gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -246,40 +259,17 @@ def robo_vision():
   # debugging -- write canny to file
   cv2.imwrite("debug/NAOVISION.png", canny)
 
-  """
-  # debugging -- what does NAO see
-  cv2.imshow("canny", canny)
-
-  # press 0 to get out of image view
-  cv2.waitKey(0)
-  """
-
   # contour detection
-  contours,h = cv2.findContours(canny,1,2)
+  contours,h = cv2.findContours(canny,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+  # http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
 
   # draw a specific shape
   # http://docs.opencv.org/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html?highlight=findcontours#findcontours
   # http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
-    if len(approx)==2:
-      robo_motion("line", contours)
-      break
-    elif len(approx)==5:
-      robo_motion("pentagon", contours)
-      break
-    elif len(approx)==3:
-      robo_motion("triangle", contours)
-      break
-    elif len(approx)==4:
-      robo_motion("square", contours)
-      break
-    elif len(approx) == 9:
-      robo_motion("half-circle", contours)
-      break
-    elif len(approx) > 15:
-      robo_motion("circle", contours)
-      break
+    robo_motion(approx)
 
   c = cv2.waitKey(50)
   if c == 27:
@@ -289,10 +279,11 @@ def robo_vision():
 @function: robo_motion
 @description: draws the shape seen by NAO.
 """
-def robo_motion(shape_name, points):
+def robo_motion(points):
   # NAO, what are we going to draw?
-  #voice.say("I will draw a " + shape_name);
-  print "\nNAO Robot will draw this shape: " + shape_name + "."
+  voice.say("I will draw your shape!");
+
+  #stiffness_off(motionProxy)
 
   # Send NAO to Pose Init
   #postureProxy.goToPosture("StandInit", 0.5)
@@ -328,9 +319,10 @@ def robo_motion(shape_name, points):
   motionProxy.positionInterpolation(effector, space, path, axisMask, times, isAbsolute)
 
   # raise your hand!
-  #motionProxy.positionInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
+  motionProxy.positionInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
 
-  voice.say("Here is your " + shape_name)
+  # Done
+  voice.say("Here is your shape!");
 
 """
 @function: transformation
@@ -348,56 +340,56 @@ def transformation(name_of_matrix, matrix, rows, columns, a, alpha, distance, th
           matrix[i][j] = round(temp)
       elif i == 0 and j == 1:
         temp = (-(math.sin(theta*math.pi/180.0))*math.cos(alpha*math.pi/180.0))
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 0 and j == 2:
         temp = (math.sin(theta*math.pi/ 180.0) * math.sin(alpha*math.pi/ 180.0))
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 0 and j == 3:
         temp = (a * math.cos(theta*math.pi/180.0))
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 1 and j == 0:
         temp = math.sin(theta*math.pi/180.0)
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 1 and j == 1:
         temp = (math.cos(theta*math.pi/180.0)*math.cos(alpha*math.pi/180.0))
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 1 and j == 2:
         temp = (-(math.cos(theta*math.pi/180.0))*math.sin(alpha*math.pi/180.0))
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 1 and j == 3:
         temp = a*math.sin(theta*math.pi/180.0)
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 2 and j == 0:
         matrix[i][j] = 0.0
       elif i == 2 and j == 1:
         temp = math.sin(alpha * math.pi/180.0)
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 2 and j == 2:
         temp = math.cos(alpha * math.pi/180.0)
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 2 and j == 3:
         temp = distance
-         if temp == -0:
-           temp = 0.0
-           matrix[i][j] = round(temp)
+        if temp == -0:
+          temp = 0.0
+          matrix[i][j] = round(temp)
       elif i == 3 and j == 0:
         matrix[i][j] = 0.0
       elif i == 3 and j == 1:
@@ -530,7 +522,7 @@ if __name__ == '__main__':
   time.sleep(3)
 
   # stiffness off
-  stiffness_off(motionProxy)
+  #stiffness_off(motionProxy)
 
   # end of program
   print("End of Program.")
