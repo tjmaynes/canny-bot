@@ -245,8 +245,6 @@ def robo_vision():
   # use opencv to read from image
   frame = cv2.imread("debug/test.png")
 
-  normal = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
   # Convert to greyscale
   gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
@@ -317,6 +315,8 @@ def robo_motion(points):
 
   # draw the shape!
   motionProxy.positionInterpolation(effector, space, path, axisMask, times, isAbsolute)
+
+  time.sleep(2)
 
   # raise your hand!
   motionProxy.positionInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
@@ -520,9 +520,6 @@ if __name__ == '__main__':
 
   # smooth transition ftw!
   time.sleep(3)
-
-  # stiffness off
-  #stiffness_off(motionProxy)
 
   # end of program
   print("End of Program.")
