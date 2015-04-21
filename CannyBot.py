@@ -194,14 +194,12 @@ def lookup_table(points):
                          [0, 460, grid[0][460]],
                          [640, 460, grid[640][460]]]
 
-  path = []
-
   # perform bilinear interpolation on all the points
   # to get theta values of each point
+  path = []
   for i in range(len(points)):
     for j in range(len(points[i])):
       path.append(bilinear_interpolation(points[i][j].item(0), points[i][j].item(1), defined_grid_points))
-
   return path
 
 """
@@ -255,16 +253,15 @@ def robo_vision():
   # contour detection
   contours,h = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-  print contours[0]
-
   # http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
 
   # draw a specific shape
   # http://docs.opencv.org/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html?highlight=findcontours#findcontours
   # http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
   for cnt in contours:
-    approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
-    robo_motion(contours)#approx)
+    approx = cv2.approxPolyDP(cnt,0.1*cv2.arcLength(cnt,True),True)
+    robo_motion(approx) # if a square, approx will return four corner points
+    break
 
   c = cv2.waitKey(50)
   if c == 27:
