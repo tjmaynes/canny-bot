@@ -24,7 +24,7 @@ SHOULDER_OFFSET_Y = 98
 SHOULDER_OFFSET_Z = 100
 
 # nao settings
-ip = "169.254.242.79"
+ip = "169.254.226.148"
 port = 9559
 eyes = None
 video_proxy = None
@@ -51,7 +51,7 @@ def stiffness_on(proxy):
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
 def stiffness_off(proxy):
-  pNames = "Body"
+  pNames = "RArm"
   pStiffnessLists = 0.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
@@ -106,11 +106,9 @@ def bilinear_interpolation(x, y, values):
 """
 def get_times(path):
   times = []
-  print len(path)
-  print path[0]
   for i in range(len(path)):
-    times.append([1.0,2.0,3.0,4.0,5.0,6.0])
-
+    times.append([float(1.0),float(2.0),float(3.0),float(4.0),float(5.0),float(6.0)])
+  times.append(0)
   return times
 
 """
@@ -183,21 +181,18 @@ def lookup_table(points):
   for i in range(0,pixel_rows+1):
     for j in range(0,pixel_columns+1):
       if i == 0 and j == 0:
-        grid[i][j] = [0.5200679898262024, 0.3141592741012573, 0.5982180833816528, 0.6611959934234619, 0.621228039264679, 0.7531999945640564]
+        grid[i][j] = [0.5967679619789124, 0.3141592741012573, 0.9372320771217346, 0.7900519967079163, 0.3941960334777832, 0.7504000067710876]
       elif i == 640 and j == 0:
-        grid[i][j] = [0.7256239652633667, -0.1871899664402008, 0.7746280431747437, 1.0339579582214355, 0.7071320414543152, 0.7531999945640564]
+        grid[i][j] = [0.7317599654197693, -0.06753796339035034, 1.2225561141967773, 1.0155500173568726, 0.3389720320701599, 0.7504000067710876]
       elif i == 0 and j == 460:
         grid[i][j] = [0.8038579821586609, 0.2668740451335907, 0.32670003175735474, 1.2671259641647339, 0.4463520646095276, 0.7547999620437622]
       elif i == 640 and j == 460:
-        grid[i][j] = [0.8836259841918945, -0.44029998779296875, 0.5706060528755188, 1.5446163415908813, 0.8298520445823669, 0.753600001335144]
+        grid[i][j] = [0.6750019788742065, -0.35899797081947327, 0.39879804849624634, 1.4910900592803955, 0.8605320453643799, 0.7619999647140503]
 
   defined_grid_points = [[0, 0, grid[0][0]],
                          [640, 0, grid[640][0]],
                          [0, 460, grid[0][460]],
                          [640, 460, grid[640][460]]]
-
-  print points
-  print points[0][0].item(0)
 
   path = []
 
@@ -258,7 +253,9 @@ def robo_vision():
   cv2.imwrite("debug/NAOVISION.png", canny)
 
   # contour detection
-  contours,h = cv2.findContours(canny,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+  contours,h = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+  print contours[0]
 
   # http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
 
@@ -267,7 +264,7 @@ def robo_vision():
   # http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)
-    robo_motion(approx)
+    robo_motion(contours)#approx)
 
   c = cv2.waitKey(50)
   if c == 27:
@@ -302,7 +299,7 @@ def robo_motion(points):
   #time.sleep(3)
 
   # We will be moving the left arm
-  motionProxy.setStiffnesses("RArm", 0.0)
+  motionProxy.setStiffnesses("RArm", 1.0)
   effector   = "RArm"
   space      = motion.SPACE_TORSO
   axisMask   = almath.AXIS_MASK_VEL
@@ -311,15 +308,16 @@ def robo_motion(points):
   # create grid with stage 3 setup
   path = lookup_table(points)
 
+  # create times
   times = get_times(path)
 
   # draw the shape!
-  motionProxy.positionInterpolation(effector, space, path, axisMask, times, isAbsolute)
+  motionProxy.angleInterpolation(effector, path, times, isAbsolute)
 
-  time.sleep(2)
+  motionProxy.setStiffnesses("RArm", 0.0)
 
   # raise your hand!
-  motionProxy.positionInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
+  #motionProxy.angleInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
 
   # Done
   voice.say("Here is your shape!");
