@@ -73,7 +73,7 @@ def stiffness_on(proxy):
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
 def stiffness_off(proxy):
-  pNames = "Head"
+  pNames = "Body"
   pStiffnessLists = 0.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
@@ -300,7 +300,7 @@ def robo_motion(points):
   # NAO, what are we going to draw?
   voice.say("I will draw your shape!");
 
-  #stiffness_off(motionProxy)
+  stiffness_off(motionProxy)
 
   #time.sleep(3)
 
@@ -316,8 +316,6 @@ def robo_motion(points):
 
   # create grid with stage 3 setup
   path = lookup_table(points)
-
-  print len(path)
 
   # draw the shape!
   for i in range(len(path)):
