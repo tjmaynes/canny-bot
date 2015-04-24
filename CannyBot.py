@@ -36,6 +36,28 @@ fps = 30
 
 """
 
+Connect to NAO Robot on startup
+
+"""
+try:
+  motionProxy = ALProxy("ALMotion", ip, port)
+except Exception, e:
+  print "Could not create proxy to ALMotion"
+  print "Error was: ", e
+try:
+  postureProxy = ALProxy("ALRobotPosture", ip, port)
+except Exception, e:
+  print "Could not create proxy to ALRobotPosture"
+  print "Error was: ", e
+try:
+  voice = ALProxy("ALTextToSpeech", ip, port)
+except Exception, e:
+  print "Could not create proxy to ALTextToSpeech"
+  print "Error was: ", e
+
+
+"""
+
 helper functions
 
 """
@@ -45,13 +67,13 @@ def pretty_print(name, matrix):
     print row
 
 def stiffness_on(proxy):
-  pNames = "Body"
+  pNames = "RArm"
   pStiffnessLists = 1.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
 def stiffness_off(proxy):
-  pNames = "RArm"
+  pNames = "Head"
   pStiffnessLists = 0.0
   pTimeLists = 1.0
   proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
@@ -101,29 +123,24 @@ def bilinear_interpolation(x, y, values):
   return final_temp
 
 """
-@function: get_times
-@description: manually add in a time for each set of theta values per point (lots of points)
-"""
-def get_times(path):
-  times = []
-  for i in range(len(path)):
-    times.append([float(1.0),float(2.0),float(3.0),float(4.0),float(5.0),float(6.0)])
-  times.append(0)
-  return times
-
-"""
 @function: get_joint_angles()
 @description: manually get joint angles within NAO's workspace
 @return: a list of joint angles =>  [rshoulderpitch, rshoulderroll, relbowyaw, rwristyaw, rhand]
 """
 def get_joint_angles():
   # which coordinate location to record
-  input_value = raw_input("\Which coordinate? ")
+  input_value = raw_input("\nWhich coordinate? ")
 
   # read input file
   f = open('debug/input.txt', 'a')
   f.write("\n\nCoordinate: " + input_value)
-  
+
+  #We use the "Body" name to signify the collection of all joints
+  pNames = "LArm"
+  pStiffnessLists = 0.0
+  pTimeLists = 1.0
+  motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)  
+
   #We use the "Body" name to signify the collection of all joints
   pNames = "RArm"
   pStiffnessLists = 0.0
@@ -131,11 +148,27 @@ def get_joint_angles():
   motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
   # Example that finds the difference between the command and sensed angles.
+  names       = "LArm"
+  useSensors    = False
+  commandAngles = motionProxy.getAngles(names, useSensors)
+
+  f.write("\nLArm:")
+
+  f.write("\nCommand Angles:\n" + str(commandAngles) )
+
+  useSensors  = True
+  sensorAngles = motionProxy.getAngles(names, useSensors)
+
+  f.write("\nSensor Angles:\n" + str(sensorAngles) )
+
+  f.write("\n\nRArm:")
+
+  # Example that finds the difference between the command and sensed angles.
   names       = "RArm"
   useSensors    = False
   commandAngles = motionProxy.getAngles(names, useSensors)
 
-  f.write("\Command Angles:\n" + str(commandAngles) )
+  f.write("\nCommand Angles:\n" + str(commandAngles) )
 
   useSensors  = True
   sensorAngles = motionProxy.getAngles(names, useSensors)
@@ -144,27 +177,6 @@ def get_joint_angles():
 
   # close input file
   f.close()
-
-"""
-
-Connect to NAO Robot on startup
-
-"""
-try:
-  motionProxy = ALProxy("ALMotion", ip, port)
-except Exception, e:
-  print "Could not create proxy to ALMotion"
-  print "Error was: ", e
-try:
-  postureProxy = ALProxy("ALRobotPosture", ip, port)
-except Exception, e:
-  print "Could not create proxy to ALRobotPosture"
-  print "Error was: ", e
-try:
-  voice = ALProxy("ALTextToSpeech", ip, port)
-except Exception, e:
-  print "Could not create proxy to ALTextToSpeech"
-  print "Error was: ", e
 
 """
 @function: lookup_table
@@ -194,12 +206,23 @@ def lookup_table(points):
                          [0, 460, grid[0][460]],
                          [640, 460, grid[640][460]]]
 
+  # read input file
+  f = open('debug/input.txt', 'a')
+
+  f.write("\n\nTesting")
+
   # perform bilinear interpolation on all the points
   # to get theta values of each point
   path = []
+  end = bilinear_interpolation(points[0][0].item(0), points[0][0].item(1), defined_grid_points)
   for i in range(len(points)):
     for j in range(len(points[i])):
       path.append(bilinear_interpolation(points[i][j].item(0), points[i][j].item(1), defined_grid_points))
+      f.write("\n\n " + str(bilinear_interpolation(points[i][j].item(0), points[i][j].item(1), defined_grid_points)))
+  path.append(end) # append start to last position in order to end up there!
+
+  f.close()
+
   return path
 
 """
@@ -233,10 +256,10 @@ def robo_vision():
 
   # get rid of pink garbage for final canny
   w, h = im.size
-  im.crop((0, 10, w, h-10)).save("debug/test.png")
+  im.crop((0, 10, w, h-10)).save("debug/noognagnook.png")
 
   # use opencv to read from image
-  frame = cv2.imread("debug/test.png")
+  frame = cv2.imread("debug/noognagnook.png")
 
   # Convert to greyscale
   gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -253,14 +276,14 @@ def robo_vision():
   # contour detection
   contours,h = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-  # http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
-
   # draw a specific shape
+  # http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
   # http://docs.opencv.org/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html?highlight=findcontours#findcontours
   # http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
+
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.1*cv2.arcLength(cnt,True),True)
-    robo_motion(approx) # if a square, approx will return four corner points
+    robo_motion(approx)
     break
 
   c = cv2.waitKey(50)
@@ -272,28 +295,17 @@ def robo_vision():
 @description: draws the shape seen by NAO.
 """
 def robo_motion(points):
+  # just sleep for 3 seconds
+
   # NAO, what are we going to draw?
   voice.say("I will draw your shape!");
 
   #stiffness_off(motionProxy)
 
+  #time.sleep(3)
+
   # Send NAO to Pose Init
   #postureProxy.goToPosture("StandInit", 0.5)
-
-  # Open nao right hand
-  #motionProxy.openHand('RHand')
-
-  # open hand for a few seconds
-  #time.sleep(2)
-
-  # grab marker
-  #motionProxy.closeHand('RHand')
-
-  # say thank you for the pen Nao
-  #voice.say("Thank you for the marker! Let's begin!")
-
-  # just sleep for 3 seconds
-  #time.sleep(3)
 
   # We will be moving the left arm
   motionProxy.setStiffnesses("RArm", 1.0)
@@ -305,19 +317,28 @@ def robo_motion(points):
   # create grid with stage 3 setup
   path = lookup_table(points)
 
-  # create times
-  times = get_times(path)
+  print len(path)
 
   # draw the shape!
-  motionProxy.angleInterpolation(effector, path, times, isAbsolute)
+  for i in range(len(path)):
+    motionProxy.setAngles(effector, path[i], 0.2)
+    time.sleep(2)
 
-  motionProxy.setStiffnesses("RArm", 0.0)
+  # prepare the left arm 
+  motionProxy.setStiffnesses("LArm", 1.0)
 
   # raise your hand!
-  #motionProxy.angleInterpolation(effector, space, end, axisMask, [2.0], isAbsolute)
+  effectors = ["LArm","RArm"]
+  path = [[-1.716588020324707, 0.11500804126262665, -0.1150919571518898, -0.03490658476948738, -1.4542739391326904, 0.7563999891281128],
+          [-1.6628141403198242, 0.09506604075431824, 1.1704000234603882, 0.07367396354675293, 0.48470205068588257, 0.7555999755859375]]
+  
+  # draw the shape!
+  for i in range(len(path)):
+    motionProxy.setAngles(effectors[i], path[i], 0.2)
+    time.sleep(1)
 
   # Done
-  voice.say("Here is your shape!");
+  voice.say("Here is your shape!")
 
 """
 @function: transformation
@@ -504,7 +525,7 @@ if __name__ == '__main__':
   print("\nWelcome to the CannyBot Program!\n")
 
   # debug?
-  decision = raw_input("\nWould you like to debug? (y or n) ")
+  decision = raw_input("\nWould you like to debug? (y or n)\n> ")
   if decision == "n" or decision == "no" or decision == "0":
     robo_vision()
   else:
