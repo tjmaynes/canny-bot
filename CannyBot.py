@@ -34,6 +34,7 @@ resolution = 2   #VGA
 color_space = 11  #RGB
 fps = 30
 
+
 """
 
 Connect to NAO Robot on startup
@@ -192,13 +193,13 @@ def lookup_table(points):
   for i in range(0,pixel_rows+1):
     for j in range(0,pixel_columns+1):
       if i == 0 and j == 0:
-        grid[i][j] = [0.5967679619789124, 0.3141592741012573, 0.9372320771217346, 0.7900519967079163, 0.3941960334777832, 0.7504000067710876]
+        grid[i][j] = [0.4188239574432373, 0.3141592741012573, 0.7577540874481201, 0.5660879611968994, 0.5997520685195923, 0.7547999620437622]
       elif i == 640 and j == 0:
-        grid[i][j] = [0.7317599654197693, -0.06753796339035034, 1.2225561141967773, 1.0155500173568726, 0.3389720320701599, 0.7504000067710876]
+        grid[i][j] = [0.4970579743385315, -0.3497939705848694, 0.5491300821304321, 1.055433988571167, 0.9909220933914185, 0.7547999620437622]
       elif i == 0 and j == 460:
-        grid[i][j] = [0.8038579821586609, 0.2668740451335907, 0.32670003175735474, 1.2671259641647339, 0.4463520646095276, 0.7547999620437622]
+        grid[i][j] = [0.4157559871673584, 0.18710604310035706, 0.10273604094982147, 1.152076005935669, 1.043078064918518, 0.7547999620437622]
       elif i == 640 and j == 460:
-        grid[i][j] = [0.6750019788742065, -0.35899797081947327, 0.39879804849624634, 1.4910900592803955, 0.8605320453643799, 0.7619999647140503]
+        grid[i][j] = [0.5216019749641418, -0.6289819478988647, 0.2530680298805237, 1.5446163415908813, 1.0599520206451416, 0.7547999620437622]
 
   defined_grid_points = [[0, 0, grid[0][0]],
                          [640, 0, grid[640][0]],
@@ -281,7 +282,11 @@ def robo_vision():
   voice.say("I will draw your shape!");
 
   # debug => turn stiffness off
-  stiffness_off(motionProxy)
+  #stiffness_off(motionProxy)
+
+  # We will be moving the left arm and right arm
+  motionProxy.setStiffnesses("LArm", 1.0)
+  motionProxy.setStiffnesses("RArm", 1.0)
 
   # draw a specific shape
   # http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
@@ -290,9 +295,13 @@ def robo_vision():
   for cnt in contours:
     approx = cv2.approxPolyDP(cnt,0.1*cv2.arcLength(cnt,True),True)
     robo_motion(approx)
+    break
 
-  # prepare the left arm
-  motionProxy.setStiffnesses("LArm", 1.0)
+  # cleaner exit
+  effector = ["RArm"]
+  path = [0.39121198654174805, -0.03839196264743805, 0.7132680416107178, 0.9603259563446045, 0.7884340286254883, 0.7547999620437622]
+
+  motionProxy.setAngles(effector, path, 0.3)
 
   # raise your hand!
   effectors = ["LArm","RArm"]
@@ -318,9 +327,6 @@ def robo_vision():
 @description: draws the shape seen by NAO.
 """
 def robo_motion(points):
-  # We will be moving the left arm
-  motionProxy.setStiffnesses("RArm", 1.0)
-
   # specify the effector to use
   effector   = "RArm"
 
