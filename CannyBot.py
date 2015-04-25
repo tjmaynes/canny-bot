@@ -251,14 +251,14 @@ def robo_vision():
   im = Image.fromstring(pil_color_space, (imageWidth, imageHeight), buffer)
 
   # Save the image.
-  im.save("debug/noognagnook.png")
+  im.save("debug/noognagnook_square.png")
 
   # get rid of pink garbage for final canny
   w, h = im.size
-  im.crop((0, 10, w, h-10)).save("debug/noognagnook.png")
+  im.crop((0, 10, w, h-10)).save("debug/noognagnook_square.png")
 
   # use opencv to read from image
-  frame = cv2.imread("debug/noognagnook.png")
+  frame = cv2.imread("debug/noognagnook_square.png")
 
   # Convert to greyscale
   gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -270,7 +270,7 @@ def robo_vision():
   canny = cv2.Canny(blur, 10, 100)
 
   # debugging -- write canny to file
-  cv2.imwrite("debug/NAOVISION.png", canny)
+  cv2.imwrite("debug/NAOVISION_square.png", canny)
 
   # contour detection
   contours,h = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
