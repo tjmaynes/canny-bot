@@ -1,0 +1,135 @@
+@import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
+*{
+    padding:0px;
+    margin:0px;
+}
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+}
+body {
+    padding:50px;
+    font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color:#333;
+    font-weight:300;
+    background:#fbfbfb;
+}
+h1, h2, h3, h4, h5, h6 {
+    color:#444;
+    margin:0 0 20px;
+}
+ol, ul{
+    margin:0 0 10px;
+}
+p, table, pre, dl {
+    margin:0 0 20px 0;
+}
+nav ul li{
+    display: inline;
+}
+h1, h2, h3 {
+    line-height:1.1;
+}
+h1 {
+    font-size:28px;
+}
+h2 {
+    color:#393939;
+}
+a {
+    color:#00BFFF;
+    font-weight:400;
+    text-decoration:none;
+}
+a:hover {
+    color:#OOBFFF;
+    opacity: 0.8;
+}
+a small {
+    font-size:11px;
+    color:#777;
+    margin-top:-0.6em;
+    display:block;
+}
+a:hover small {
+    color:#777;
+}
+p a, p a:hover{
+	 color:#8B8878;
+     }
+.wrapper {
+    max-width:560px;
+    margin:0 auto;
+    padding:10px;
+}
+blockquote {
+    border-left:1px solid #e5e5e5;
+    margin:0;
+    padding:0 0 0 20px;
+    font-style:italic;
+}
+code, pre {
+    font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
+    color:#333;
+    font-size:12px;
+}
+pre{
+    padding:10px;
+    background: #fbfbfb;
+    line-height:1.42857;
+    overflow: auto;
+}
+img {
+    max-width:100%;
+}
+strong {
+    color:#444;
+    font-weight:700;
+}
+header{
+    text-align:center;
+}
+footer{
+    text-align:center;
+}
+small {
+    font-size:11px;
+}
+hr {
+    border:0;
+    background:#555;
+    height:1px;
+    margin:20px 0 20px;
+}
+section {
+    border:1px solid #777;
+    border-width:1px 0;
+    padding:20px 0;
+    margin:0 0 20px;
+}
+iframe{
+    width: 560px;
+    height: 315px;
+}
+.steps ol{
+    list-style-type:decimal;
+    padding:0px 10px;
+}
+.steps ul li{
+    display: block;
+}
