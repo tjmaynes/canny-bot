@@ -1,5 +1,5 @@
 # CannyBot
-getting the NAO Robot to draw the shapes it "sees" using image processing
+getting the NAO Robot to draw the shapes it "sees" using OpenCV
 
 ![screenshot](/debug/NAOVISION.png)
 
