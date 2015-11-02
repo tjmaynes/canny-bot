@@ -1,6 +1,6 @@
 """
 @file: CannyBot.py
-@authors: Tommy Lin, TJ Maynes
+@authors: TJ Maynes, Tommy Lin
 @subject: getting the NAO Robot to draw the shapes it "sees" using image processing.
 @link:
 http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
