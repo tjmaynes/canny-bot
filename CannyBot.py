@@ -4,7 +4,7 @@
 @subject: getting the NAO Robot to draw the shapes it "sees" using image processing.
 @link:
 http://opencvpython.blogspot.com/2012/06/hi-this-article-is-tutorial-which-try.html
-http://docs.opencv.org/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html?highlight=findcontours#findcontours
+http://docs.opencv.org/modules/imgproc/doc/structural_analysis_and_shape_descriptors.html
 http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
 """
 
@@ -137,13 +137,17 @@ def lookup_table(points):
   for i in range(0,pixel_rows+1):
     for j in range(0,pixel_columns+1):
       if i == 0 and j == 0:
-        grid[i][j] = [0.4188239574432373, 0.3141592741012573, 0.7577540874481201, 0.5660879611968994, 0.5997520685195923, 0.7547999620437622]
+        grid[i][j] = [0.4188239574432373, 0.3141592741012573, 0.7577540874481201,
+                      0.5660879611968994, 0.5997520685195923, 0.7547999620437622]
       elif i == 640 and j == 0:
-        grid[i][j] = [0.4970579743385315, -0.3497939705848694, 0.5491300821304321, 1.055433988571167, 0.9909220933914185, 0.7547999620437622]
+        grid[i][j] = [0.4970579743385315, -0.3497939705848694, 0.5491300821304321,
+                      1.055433988571167, 0.9909220933914185, 0.7547999620437622]
       elif i == 0 and j == 460:
-        grid[i][j] = [0.4157559871673584, 0.18710604310035706, 0.10273604094982147, 1.152076005935669, 1.043078064918518, 0.7547999620437622]
+        grid[i][j] = [0.4157559871673584, 0.18710604310035706, 0.10273604094982147,
+                      1.152076005935669, 1.043078064918518, 0.7547999620437622]
       elif i == 640 and j == 460:
-        grid[i][j] = [0.5216019749641418, -0.6289819478988647, 0.2530680298805237, 1.5446163415908813, 1.0599520206451416, 0.7547999620437622]
+        grid[i][j] = [0.5216019749641418, -0.6289819478988647, 0.2530680298805237,
+                      1.5446163415908813, 1.0599520206451416, 0.7547999620437622]
 
   defined_grid_points = [[0, 0, grid[0][0]],
                          [640, 0, grid[640][0]],
@@ -208,13 +212,16 @@ def robo_vision():
     break
 
   effector = ["RArm"]
-  path = [0.39121198654174805, -0.03839196264743805, 0.7132680416107178, 0.9603259563446045, 0.7884340286254883, 0.7547999620437622]
+  path = [0.39121198654174805, -0.03839196264743805, 0.7132680416107178,
+          0.9603259563446045, 0.7884340286254883, 0.7547999620437622]
 
   motionProxy.setAngles(effector, path, 0.3)
 
   effectors = ["LArm","RArm"]
-  path = [[-1.716588020324707, 0.11500804126262665, -0.1150919571518898, -0.03490658476948738, -1.4542739391326904, 0.7563999891281128],
-          [-1.6628141403198242, 0.09506604075431824, 1.1704000234603882, 0.07367396354675293, 0.48470205068588257, 0.7555999755859375]]
+  path = [[-1.716588020324707, 0.11500804126262665, -0.1150919571518898,
+           -0.03490658476948738, -1.4542739391326904, 0.7563999891281128],
+          [-1.6628141403198242, 0.09506604075431824, 1.1704000234603882,
+           0.07367396354675293, 0.48470205068588257, 0.7555999755859375]]
 
   for i in range(len(path)):
     motionProxy.setAngles(effectors[i], path[i], 0.2)
@@ -235,7 +242,7 @@ def robo_motion(points):
     motionProxy.setAngles(effector, path[i], 0.2)
     time.sleep(2)
 
-def setupCannyBot():
+def setup_canny_bot():
   try:
     motionProxy = ALProxy("ALMotion", ip, port)
   except Exception, e:
@@ -255,7 +262,7 @@ def setupCannyBot():
 if __name__ == '__main__':
   print("\nWelcome to the CannyBot Program!\n")
 
-  setupCannyBot()
+  setup_canny_bot()
   
   decision = raw_input("\nWould you like to debug? (0 or 1)\n> ")
   if decision == "0":
