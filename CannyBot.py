@@ -26,16 +26,10 @@ color_space = 11  #RGB
 fps = 30
 
 def stiffness_on(proxy):
-  pNames = "RArm"
-  pStiffnessLists = 1.0
-  pTimeLists = 1.0
-  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+  proxy.stiffnessInterpolation("RArm", 1.0, 1.0)
 
 def stiffness_off(proxy):
-  pNames = "Body"
-  pStiffnessLists = 0.0
-  pTimeLists = 1.0
-  proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+  proxy.stiffnessInterpolation("Body", 0.0, 1.0)
 
 """
 @function: bilinear_interpolation
@@ -86,38 +80,17 @@ def record_joint_angles():
   f = open('debug/input.txt', 'a')
   f.write("\n\nCoordinate: " + input_value)
 
-  pNames = "LArm"
-  pStiffnessLists = 0.0
-  pTimeLists = 1.0
-  motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
+  motionProxy.stiffnessInterpolation("LArm", 0.0, 1.0)
+  motionProxy.stiffnessInterpolation("RArm", 0.0, 1.0)
 
-  pNames = "RArm"
-  pStiffnessLists = 0.0
-  pTimeLists = 1.0
-  motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
-
-  names       = "LArm"
-  useSensors    = False
-  commandAngles = motionProxy.getAngles(names, useSensors)
-
-  f.write("\nLArm:")
-  f.write("\nCommand Angles:\n" + str(commandAngles))
-
-  useSensors  = True
-  sensorAngles = motionProxy.getAngles(names, useSensors)
-
+  commandAngles = motionProxy.getAngles("LArm", False)
+  f.write("\nLArm\nCommand Angles:\n" + str(commandAngles))
+  sensorAngles = motionProxy.getAngles("LArm", True)
   f.write("\nSensor Angles:\n" + str(sensorAngles))
-  f.write("\n\nRArm:")
 
-  names       = "RArm"
-  useSensors    = False
-  commandAngles = motionProxy.getAngles(names, useSensors)
-
-  f.write("\nCommand Angles:\n" + str(commandAngles))
-
-  useSensors  = True
-  sensorAngles = motionProxy.getAngles(names, useSensors)
-
+  commandAngles = motionProxy.getAngles("RArm", False)
+  sensorAngles = motionProxy.getAngles("RArm", True)
+  f.write("\n\nRArm\nCommand Angles:\n" + str(commandAngles))
   f.write("\nSensor Angles:\n" + str(sensorAngles))
   
   f.close()
@@ -178,19 +151,19 @@ def robo_vision():
   video_proxy = ALProxy("ALVideoDevice", ip, port)
   video_client = video_proxy.subscribe("NAO_CAM", resolution, color_space, fps)
 
-  naoImage = video_proxy.getImageRemote(video_client)
+  nao_image = video_proxy.getImageRemote(video_client)
 
   video_proxy.unsubscribe(video_client)
 
-  imageWidth = naoImage[0]
-  imageHeight = naoImage[1]
-  buffer = naoImage[6]
+  image_width = nao_image[0]
+  image_height = nao_image[1]
+  buffer = nao_image[6]
 
-  im = Image.fromstring(pil_color_space, (imageWidth, imageHeight), buffer)
-  im.save("debug/noognagnook_square.png")
-
-  w, h = im.size
-  im.crop((0, 10, w, h-10)).save("debug/noognagnook_square.png")
+  # record image 'seen' by NAO
+  image = Image.fromstring(pil_color_space, (image_width, image_height), buffer)
+  image.save("debug/noognagnook_square.png")
+  w, h = image.size
+  image.crop((0, 10, w, h-10)).save("debug/noognagnook_square.png")
 
   frame = cv2.imread("debug/noognagnook_square.png")
   gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -211,10 +184,10 @@ def robo_vision():
     robo_motion(approx)
     break
 
+  # RArm will start from certain area of physical workplace.
   effector = ["RArm"]
   path = [0.39121198654174805, -0.03839196264743805, 0.7132680416107178,
           0.9603259563446045, 0.7884340286254883, 0.7547999620437622]
-
   motionProxy.setAngles(effector, path, 0.3)
 
   effectors = ["LArm","RArm"]
@@ -222,7 +195,6 @@ def robo_vision():
            -0.03490658476948738, -1.4542739391326904, 0.7563999891281128],
           [-1.6628141403198242, 0.09506604075431824, 1.1704000234603882,
            0.07367396354675293, 0.48470205068588257, 0.7555999755859375]]
-
   for i in range(len(path)):
     motionProxy.setAngles(effectors[i], path[i], 0.2)
     time.sleep(1)
@@ -259,15 +231,17 @@ def setup_canny_bot():
     print "Could not create proxy to ALTextToSpeech"
     print "Error was: ", e
 
-if __name__ == '__main__':
+def main_menu():
   print("\nWelcome to the CannyBot Program!\n")
 
-  setup_canny_bot()
-  
   decision = raw_input("\nWould you like to debug? (0 or 1)\n> ")
   if decision == "0":
     robo_vision()
   else:
-    record_joint_angles()
+    record_joint_angles()  
 
   print("End of Program.")
+
+if __name__ == '__main__':
+  setup_canny_bot()
+  main_menu()
