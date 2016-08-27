@@ -24,7 +24,7 @@ time, mark, audio, video {
 }
 body {
     padding:50px;
-    font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font:18px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
     color:#333;
     font-weight:300;
     background:#fbfbfb;
@@ -71,28 +71,13 @@ a:hover small {
 }
 p a, p a:hover{
 	 color:#8B8878;
-     }
+}
+p {
+  font-family: times;
+}
 .wrapper {
     max-width:560px;
     margin:0 auto;
-    padding:10px;
-}
-blockquote {
-    border-left:1px solid #e5e5e5;
-    margin:0;
-    padding:0 0 0 20px;
-    font-style:italic;
-}
-code, pre {
-    font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
-    color:#333;
-    font-size:12px;
-}
-pre{
-    padding:10px;
-    background: #fbfbfb;
-    line-height:1.42857;
-    overflow: auto;
 }
 img {
     max-width:100%;
@@ -128,7 +113,7 @@ iframe{
 }
 .steps ol{
     list-style-type:decimal;
-    padding:0px 10px;
+    margin:20px;
 }
 .steps ul li{
     display: block;
